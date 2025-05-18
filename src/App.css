@@ -1,0 +1,103 @@
+/* .playground {
+  display: flex;
+  flex-direction: column;
+}
+
+.editorContainer {
+  min-height: 60vh;
+  display: flex;
+}
+ */
+/* App.css */
+/* Prevent body scroll and make layout full-screen */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* Prevent entire screen from scrolling */
+  background-color: #1e1e2f;
+  color: #f8f8f2;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.playground {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.selected-file-label {
+  background-color: #282a36;
+  color: #f8f8f2;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #44475a;
+}
+
+.container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.files {
+  width: 250px;
+  background-color: #1e1e2f;
+  border-right: 1px solid #44475a;
+  overflow-y: auto;
+}
+
+.editor {
+  flex: 1;
+  background-color: #282a36;
+  overflow: hidden;
+}
+
+.terminal {
+  height: 200px;
+  background-color: #1e1e2f;
+  border-top: 1px solid #44475a;
+  padding: 10px;
+  overflow: auto;
+  max-height: 200px;
+}
+
+/* Scrollbar styling for WebKit browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e1e2f;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #44475a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6272a4;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #44475a #1e1e2f;
+}
+
+#terminal {
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+#terminal::-webkit-scrollbar {
+  /* Chrome, Safari, Opera */
+  display: none;
+}
