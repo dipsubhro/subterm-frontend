@@ -8,7 +8,7 @@ const FileNode = ({ name, children, depth = 0, path, onFileClick }) => {
     if (isFolder) {
       setIsOpen(!isOpen);
     } else {
-      const fullPath = `${path}/${name}`;
+      const fullPath = [path, name].filter(Boolean).join("/"); // Fixed path issue
       console.log(`Clicked file: ${fullPath}`);
       onFileClick(fullPath);
     }
@@ -21,9 +21,28 @@ const FileNode = ({ name, children, depth = 0, path, onFileClick }) => {
         cursor: isFolder ? "pointer" : "default",
       }}
     >
-      <div onClick={handleClick}>
-        {isFolder ? (isOpen ? "📂" : "📁") : "📄"} {name}
+      <div
+        onClick={handleClick}
+        style={{ display: "flex", alignItems: "center", padding: "4px 0" }}
+      >
+        <img
+          src={
+            isFolder
+              ? isOpen
+                ? "/folder-closed.png"
+                : "/folder-open.png"
+              : "/file.png"
+          }
+          alt={isFolder ? "Folder" : "File"}
+          style={{
+            width: "18px",
+            height: "18px",
+            marginRight: "8px",
+          }}
+        />
+        {name}
       </div>
+
       {isOpen && isFolder && (
         <div>
           {Object.entries(children).map(([childName, grandChildren]) => (
@@ -32,7 +51,7 @@ const FileNode = ({ name, children, depth = 0, path, onFileClick }) => {
               name={childName}
               children={grandChildren}
               depth={depth + 1}
-              path={`${path}/${name}`}
+              path={[path, name].filter(Boolean).join("/")}
               onFileClick={onFileClick}
             />
           ))}
@@ -55,18 +74,15 @@ const FileTree = ({ onFileClick }) => {
   return (
     <div
       style={{
-        fontFamily: "monospace",
+        fontFamily: "Fira Code",
         padding: "10px",
         background: "#1e1e2f",
         color: "#f8f8f2",
-        height: "100%",
         borderRight: "1px solid #444",
-        overflowY: "auto",
+        // Remove height and overflow here
       }}
     >
-      <h3 style={{ color: "#bd93f9", marginBottom: "10px" }}>
-        📂 Project File Explorer
-      </h3>
+      <h2 style={{ color: "#bd93f9", marginBottom: "10px" }}>Explorer</h2>
       {treeData ? (
         Object.entries(treeData).map(([name, children]) => (
           <FileNode

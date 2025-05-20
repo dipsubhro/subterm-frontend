@@ -13,7 +13,7 @@ const Terminal = () => {
     }
     isRendered.current = true;
     const term = new XTerminal({
-      rows: 20,
+      rows: 10,
       cursorBlink: true,
       fontFamily: '"JetBrains Mono", monospace',
       fontSize: 14,
@@ -37,7 +37,7 @@ const Terminal = () => {
     });
   }, []);
 
-  socket.emit("terminal:write", "echo 'hello world'\n");
+  // socket.emit("terminal:write", "echo 'hello world'\n");
 
   return <div ref={terminalRef} id="terminal" />;
 };
