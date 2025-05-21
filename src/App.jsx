@@ -1,3 +1,13 @@
+import {
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  RedirectToSignIn,
+} from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+
 import { useState, useRef, useEffect } from "react";
 import Terminal from "./components/Terminal";
 import FileTree from "./components/Tree";
@@ -13,6 +23,10 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/theme-dracula";
 
 function App() {
+  const { isSignedIn } = useUser();
+
+  if (!isSignedIn) return <RedirectToSignIn />;
+
   const [selectedFilePath, setSelectedFilePath] = useState(null);
   const [selectedFileContent, setSelectedFileContent] = useState("");
   const [reloadTree, setReloadTree] = useState(false);
@@ -20,17 +34,13 @@ function App() {
 
   useEffect(() => {
     if (!selectedFilePath) return;
-
     fetch(
       `http://localhost:3334/file?path=${encodeURIComponent(selectedFilePath)}`
     )
       .then((res) => res.json())
       .then((data) => {
-        if (data.error) {
-          console.error("Server error:", data.error);
-        } else {
-          setSelectedFileContent(data.content);
-        }
+        if (data.error) console.error("Server error:", data.error);
+        else setSelectedFileContent(data.content);
       })
       .catch((err) => console.error("Failed to load file:", err));
   }, [selectedFilePath]);
@@ -47,9 +57,8 @@ function App() {
       });
 
       const result = await response.json();
-      if (result.error) {
-        alert("Error: " + result.error);
-      } else {
+      if (result.error) alert("Error: " + result.error);
+      else {
         alert("File saved!");
         setReloadTree(!reloadTree);
       }
@@ -117,7 +126,6 @@ function App() {
               <NewFileButton onCreateFile={createFile} />
             </div>
           </div>
-
           <FileTree onFileClick={setSelectedFilePath} key={reloadTree} />
         </div>
 
@@ -152,31 +160,9 @@ function App() {
             >
               SubTerm
             </span>
-
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               <SaveButton onSave={handleSave} />
-              <button
-                onClick={() => alert("Profile clicked!")}
-                style={{
-                  background: "#ffffff20",
-                  color: "#fff",
-                  border: "1px solid #ffffff30",
-                  borderRadius: "6px",
-                  padding: "6px 12px",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition: "background 0.2s ease",
-                }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "#ffffff30")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.background = "#ffffff20")
-                }
-              >
-                👤
-              </button>
+              <UserButton />
             </div>
           </div>
 
