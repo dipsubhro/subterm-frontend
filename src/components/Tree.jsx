@@ -65,7 +65,7 @@ const FileTree = ({ onFileClick }) => {
   const [treeData, setTreeData] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:3334/files")
+    fetch(`${import.meta.env.VITE_API}/files`)
       .then((res) => res.json())
       .then((data) => setTreeData(data.tree))
       .catch((err) => console.error("Error fetching file tree:", err));
@@ -79,7 +79,6 @@ const FileTree = ({ onFileClick }) => {
         background: "#1e1e2f",
         color: "#f8f8f2",
         borderRight: "1px solid #444",
-        // Remove height and overflow here
       }}
     >
       <h2 style={{ color: "#bd93f9", marginBottom: "10px" }}>Explorer</h2>

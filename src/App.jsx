@@ -22,6 +22,8 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/theme-dracula";
 
+const API = import.meta.env.VITE_API;
+
 function App() {
   const { isSignedIn } = useUser();
 
@@ -34,9 +36,7 @@ function App() {
 
   useEffect(() => {
     if (!selectedFilePath) return;
-    fetch(
-      `http://localhost:3334/file?path=${encodeURIComponent(selectedFilePath)}`
-    )
+    fetch(`${API}/file?path=${encodeURIComponent(selectedFilePath)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) console.error("Server error:", data.error);
@@ -47,7 +47,7 @@ function App() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch("http://localhost:3334/file", {
+      const response = await fetch(`${API}/file`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -70,7 +70,7 @@ function App() {
   const createFolder = async () => {
     const folderName = prompt("Enter folder name:");
     if (!folderName) return;
-    const response = await fetch("http://localhost:3334/file", {
+    const response = await fetch(`${API}/file`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -89,7 +89,7 @@ function App() {
   const createFile = async () => {
     const fileName = prompt("Enter file name:");
     if (!fileName) return;
-    const response = await fetch("http://localhost:3334/file", {
+    const response = await fetch(`${API}/file`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
