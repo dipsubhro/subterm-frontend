@@ -35,7 +35,9 @@ function App() {
   useEffect(() => {
     if (!selectedFilePath) return;
     fetch(
-      `http://localhost:3334/file?path=${encodeURIComponent(selectedFilePath)}`
+      `${import.meta.env.VITE_API}/file?path=${encodeURIComponent(
+        selectedFilePath
+      )}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -47,7 +49,7 @@ function App() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch("http://localhost:3334/file", {
+      const response = await fetch(`${import.meta.env.VITE_API}/file`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -70,7 +72,7 @@ function App() {
   const createFolder = async () => {
     const folderName = prompt("Enter folder name:");
     if (!folderName) return;
-    const response = await fetch("http://localhost:3334/file", {
+    const response = await fetch(`${import.meta.env.VITE_API}/file`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -89,7 +91,7 @@ function App() {
   const createFile = async () => {
     const fileName = prompt("Enter file name:");
     if (!fileName) return;
-    const response = await fetch("http://localhost:3334/file", {
+    const response = await fetch(`${import.meta.env.VITE_API}/file`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -104,7 +106,6 @@ function App() {
       setReloadTree(!reloadTree);
     }
   };
-
   return (
     <div className="playground">
       <div className="container">
