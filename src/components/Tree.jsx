@@ -8,7 +8,7 @@ const FileNode = ({ name, children, depth = 0, path, onFileClick }) => {
     if (isFolder) {
       setIsOpen(!isOpen);
     } else {
-      const fullPath = [path, name].filter(Boolean).join("/"); // Fixed path issue
+      const fullPath = [path, name].filter(Boolean).join("/");
       console.log(`Clicked file: ${fullPath}`);
       onFileClick(fullPath);
     }
