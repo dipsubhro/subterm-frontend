@@ -1,23 +1,13 @@
-/* .playground {
-  display: flex;
-  flex-direction: column;
-}
-
-.editorContainer {
-  min-height: 60vh;
-  display: flex;
-}
- */
-/* App.css */
+/* App.css - SubTerm Theme (VS Code Dark Style) */
 /* Prevent body scroll and make layout full-screen */
 html,
 body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* Prevent entire screen from scrolling */
-  background-color: #1e1e2f;
-  color: #f8f8f2;
+  overflow: hidden;
+  background-color: #1E1E1E;
+  color: #D4D4D4;
   font-family: "JetBrains Mono", monospace;
 }
 
@@ -29,11 +19,11 @@ body {
 }
 
 .selected-file-label {
-  background-color: #282a36;
-  color: #f8f8f2;
+  background-color: #1A1A1A;
+  color: #D4D4D4;
   padding: 8px 12px;
   font-size: 14px;
-  border-bottom: 1px solid #44475a;
+  border-bottom: 1px solid #2A2A2A;
 }
 
 .container {
@@ -41,10 +31,11 @@ body {
   flex: 1;
   overflow: hidden;
 }
+
 .files {
   width: 250px;
-  background-color: #1e1e2f;
-  border-right: 1px solid #44475a;
+  background-color: #1E1E1E;
+  border-right: 1px solid #2A2A2A;
   overflow-y: auto;
   height: 100%;
   display: flex;
@@ -53,13 +44,13 @@ body {
 
 .editor {
   flex: 1;
-  background-color: #282a36;
+  background-color: #1E1E1E;
   overflow: hidden;
 }
 
 .terminal {
-  background-color: #1e1e2f;
-  border-top: 1px solid #44475a;
+  background-color: #1E1E1E;
+  border-top: 1px solid #2A2A2A;
   padding: 10px;
 }
 
@@ -70,54 +61,54 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e1e2f;
+  background: #1E1E1E;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #44475a;
+  background-color: #3A3A3A;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #6272a4;
+  background-color: #4A4A4A;
 }
 
 /* Firefox scrollbar styling */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #44475a #1e1e2f;
+  scrollbar-color: #3A3A3A #1E1E1E;
 }
 
 #terminal {
   width: 100%;
   height: 100%;
   overflow: scroll;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 #terminal::-webkit-scrollbar {
-  /* Chrome, Safari, Opera */
   display: none;
 }
 
 .custom-button {
-  background-color: #4f46e5; /* Indigo */
-  color: white;
+  background-color: #007ACC;
+  color: #FFFFFF;
   padding: 10px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 16px;
-  font-family: "Segoe UI", sans-serif;
+  font-family: "JetBrains Mono", monospace;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
 }
 
 .custom-button:hover {
-  background-color: #4338ca;
+  background-color: #2899F5;
 }
 
 .custom-button:disabled {
-  background-color: #a5b4fc;
+  background-color: #3A3A3A;
+  color: #858585;
   cursor: not-allowed;
 }

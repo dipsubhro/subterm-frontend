@@ -18,11 +18,11 @@ const Terminal = () => {
       fontFamily: '"JetBrains Mono", monospace',
       fontSize: 14,
       theme: {
-        background: "#282a36",
-        foreground: "#f8f8f2",
-        cursor: "#ff79c6",
-        cursorAccent: "#282a36",
-        selectionBackground: "#44475a",
+        background: "#1E1E1E",
+        foreground: "#D4D4D4",
+        cursor: "#AEAFAD",
+        cursorAccent: "#1E1E1E",
+        selectionBackground: "#264F78",
       },
     });
 
@@ -37,9 +37,8 @@ const Terminal = () => {
     });
   }, []);
 
-  // socket.emit("terminal:write", "echo 'hello world'\n");
-
   return <div ref={terminalRef} id="terminal" />;
 };
 
 export default Terminal;
+

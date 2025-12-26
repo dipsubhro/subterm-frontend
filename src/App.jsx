@@ -133,28 +133,29 @@ function App() {
         <div className="editor">
           <div
             style={{
-              background: "linear-gradient(to right, #1f004d,  #3e0f91)",
+              background: "#1E1E1E",
               height: "45px",
               padding: "0 20px",
-              color: "#ffffff",
+              color: "#D4D4D4",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               fontSize: "18px",
               fontWeight: "600",
-              fontFamily: "'Fira Code', 'Courier New', monospace",
-              borderBottom: "2px solid #3b0764",
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.2)",
+              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+              borderBottom: "1px solid #2A2A2A",
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.3)",
               letterSpacing: "0.5px",
             }}
           >
-            <img src="/terminal.png" alt="Logo" style={{ height: "32px" }} />
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#007ACC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
             <span
               style={{
-                background: "linear-gradient(to right, #a78bfa, #7c3aed)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                fontFamily: "'Fira Code', monospace",
+                color: "#007ACC",
+                fontFamily: "'JetBrains Mono', monospace",
                 fontSize: "22px",
                 fontWeight: "bold",
               }}

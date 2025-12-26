@@ -1,0 +1,30 @@
+{
+    "isDark": true,
+    "cssClass": "ace-custom-dark",
+    "background": "#1E1E1E",
+    "foreground": "#D4D4D4",
+    "cursor": "#AEAFAD",
+    "selection": "#264F78",
+    "lineHighlight": "#2A2A2A",
+    "gutter": {
+        "background": "#1A1A1A",
+        "foreground": "#858585",
+        "activeLineForeground": "#C6C6C6"
+    },
+    "tokenColors": {
+        "keyword": "#569CD6",
+        "string": "#6A9955",
+        "constant.numeric": "#B5CEA8",
+        "support.function": "#DCDCAA",
+        "variable": "#9CDCFE",
+        "comment": "#6A737D",
+        "operator": "#D4D4D4",
+        "entity.name.type": "#4EC9B0",
+        "invalid": "#F44747"
+    },
+    "ui": {
+        "accent": "#007ACC",
+        "accentHover": "#2899F5",
+        "border": "#2A2A2A"
+    }
+}
