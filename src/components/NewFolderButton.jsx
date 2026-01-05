@@ -12,18 +12,19 @@ export default function NewFolderButton({ onCreateFolder }) {
         background: "transparent",
         border: "none",
         cursor: "pointer",
-        padding: "4px",
+        padding: "6px",
         display: "flex",
         alignItems: "center",
+        justifyContent: "center",
         borderRadius: "4px",
-        transition: "background-color 0.15s ease",
-        backgroundColor: isHovered ? "#2A2A2A" : "transparent",
+        transition: "all 0.15s ease",
+        backgroundColor: isHovered ? "#3A3A3A" : "transparent",
       }}
       title="New Folder"
     >
       <svg
-        width="20"
-        height="20"
+        width="18"
+        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke={isHovered ? "#2899F5" : "#D4D4D4"}
@@ -39,4 +40,5 @@ export default function NewFolderButton({ onCreateFolder }) {
     </button>
   );
 }
+
 

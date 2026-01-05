@@ -116,13 +116,24 @@ function App() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              paddingBottom: "8px",
+              padding: "8px 12px",
+              gap: "12px",
             }}
           >
-            <strong style={{ color: selectedFilePath ? "#fff" : "#888" }}>
+            <span
+              style={{
+                color: selectedFilePath ? "#D4D4D4" : "#858585",
+                fontSize: "13px",
+                fontWeight: "500",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                flex: 1,
+              }}
+            >
               {selectedFilePath || "No file selected"}
-            </strong>
-            <div style={{ display: "flex", gap: "8px" }}>
+            </span>
+            <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
               <NewFolderButton onCreateFolder={createFolder} />
               <NewFileButton onCreateFile={createFile} />
             </div>
@@ -134,34 +145,33 @@ function App() {
           <div
             style={{
               background: "#1E1E1E",
-              height: "45px",
-              padding: "0 20px",
+              height: "40px",
+              padding: "0 16px",
               color: "#D4D4D4",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              fontSize: "18px",
-              fontWeight: "600",
+              fontSize: "14px",
+              fontWeight: "500",
               fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
               borderBottom: "1px solid #2A2A2A",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.3)",
-              letterSpacing: "0.5px",
             }}
           >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#007ACC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="4 17 10 11 4 5"></polyline>
-              <line x1="12" y1="19" x2="20" y2="19"></line>
-            </svg>
-            <span
-              style={{
-                color: "#007ACC",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: "22px",
-                fontWeight: "bold",
-              }}
-            >
-              SubTerm
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007ACC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              <span
+                style={{
+                  color: "#007ACC",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                }}
+              >
+                SubTerm
+              </span>
+            </div>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               <SaveButton onSave={handleSave} />
               <UserButton />
