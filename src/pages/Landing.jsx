@@ -1,28 +1,8 @@
 import { Link } from "react-router-dom";
-import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
-
-// Theme colors from theme.json
-const theme = {
-    background: "#1E1E1E",
-    foreground: "#D4D4D4",
-    accent: "#007ACC",
-    accentHover: "#2899F5",
-    border: "#2A2A2A",
-    gutter: "#1A1A1A",
-    keyword: "#569CD6",
-    string: "#6A9955",
-    variable: "#9CDCFE",
-    function: "#DCDCAA",
-    type: "#4EC9B0",
-};
-
-const TerminalIcon = () => (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={theme.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="4 17 10 11 4 5"></polyline>
-        <line x1="12" y1="19" x2="20" y2="19"></line>
-    </svg>
-);
+import { SignInModal, SignUpModal } from "../components/AuthModal";
+import { theme } from "../theme";
 
 const CodeBlock = () => (
     <div
@@ -147,10 +127,22 @@ const Typewriter = ({ lines, speed = 50, deleteSpeed = 30, pauseTime = 2000 }) =
 
 export default function Landing() {
     const [mounted, setMounted] = useState(false);
+    const [showSignIn, setShowSignIn] = useState(false);
+    const [showSignUp, setShowSignUp] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const handleSwitchToSignUp = () => {
+        setShowSignIn(false);
+        setShowSignUp(true);
+    };
+
+    const handleSwitchToSignIn = () => {
+        setShowSignUp(false);
+        setShowSignIn(true);
+    };
 
     return (
         <div
@@ -161,6 +153,18 @@ export default function Landing() {
                 fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
             }}
         >
+            {/* Auth Modals */}
+            <SignInModal
+                isOpen={showSignIn}
+                onClose={() => setShowSignIn(false)}
+                onSwitchToSignUp={handleSwitchToSignUp}
+            />
+            <SignUpModal
+                isOpen={showSignUp}
+                onClose={() => setShowSignUp(false)}
+                onSwitchToSignIn={handleSwitchToSignIn}
+            />
+
             {/* Navigation */}
             <nav
                 style={{
@@ -180,39 +184,40 @@ export default function Landing() {
                 </div>
                 <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
                     <SignedOut>
-                        <SignInButton mode="modal">
-                            <button
-                                style={{
-                                    background: "transparent",
-                                    border: "none",
-                                    color: theme.foreground,
-                                    fontSize: "14px",
-                                    cursor: "pointer",
-                                    padding: "8px 16px",
-                                }}
-                            >
-                                Sign In
-                            </button>
-                        </SignInButton>
-                        <SignUpButton mode="modal">
-                            <button
-                                style={{
-                                    background: theme.accent,
-                                    border: "none",
-                                    color: "#FFFFFF",
-                                    fontSize: "14px",
-                                    cursor: "pointer",
-                                    padding: "8px 20px",
-                                    borderRadius: "6px",
-                                    fontWeight: "500",
-                                    transition: "background 0.2s ease",
-                                }}
-                                onMouseEnter={(e) => (e.target.style.background = theme.accentHover)}
-                                onMouseLeave={(e) => (e.target.style.background = theme.accent)}
-                            >
-                                Get Started
-                            </button>
-                        </SignUpButton>
+                        <button
+                            onClick={() => setShowSignIn(true)}
+                            style={{
+                                background: "transparent",
+                                border: "none",
+                                color: theme.foreground,
+                                fontSize: "14px",
+                                cursor: "pointer",
+                                padding: "8px 16px",
+                                transition: "color 0.2s ease",
+                            }}
+                            onMouseEnter={(e) => (e.target.style.color = theme.accent)}
+                            onMouseLeave={(e) => (e.target.style.color = theme.foreground)}
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            onClick={() => setShowSignUp(true)}
+                            style={{
+                                background: theme.accent,
+                                border: "none",
+                                color: "#FFFFFF",
+                                fontSize: "14px",
+                                cursor: "pointer",
+                                padding: "8px 20px",
+                                borderRadius: "6px",
+                                fontWeight: "500",
+                                transition: "background 0.2s ease",
+                            }}
+                            onMouseEnter={(e) => (e.target.style.background = theme.accentHover)}
+                            onMouseLeave={(e) => (e.target.style.background = theme.accent)}
+                        >
+                            Get Started
+                        </button>
                     </SignedOut>
                     <SignedIn>
                         <Link
@@ -232,6 +237,17 @@ export default function Landing() {
                         >
                             Open IDE
                         </Link>
+                        <UserButton
+                            afterSignOutUrl="/"
+                            appearance={{
+                                elements: {
+                                    avatarBox: {
+                                        width: "36px",
+                                        height: "36px",
+                                    },
+                                },
+                            }}
+                        />
                     </SignedIn>
                 </div>
             </nav>
@@ -307,32 +323,31 @@ export default function Landing() {
 
                 <div style={{ display: "flex", gap: "16px", marginBottom: "60px" }}>
                     <SignedOut>
-                        <SignUpButton mode="modal">
-                            <button
-                                style={{
-                                    background: theme.accent,
-                                    border: "none",
-                                    color: "#FFFFFF",
-                                    fontSize: "16px",
-                                    cursor: "pointer",
-                                    padding: "14px 32px",
-                                    borderRadius: "8px",
-                                    fontWeight: "600",
-                                    transition: "all 0.2s ease",
-                                    boxShadow: `0 4px 14px ${theme.accent}40`,
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.target.style.background = theme.accentHover;
-                                    e.target.style.transform = "translateY(-2px)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.target.style.background = theme.accent;
-                                    e.target.style.transform = "translateY(0)";
-                                }}
-                            >
-                                Start Coding Free
-                            </button>
-                        </SignUpButton>
+                        <button
+                            onClick={() => setShowSignUp(true)}
+                            style={{
+                                background: theme.accent,
+                                border: "none",
+                                color: "#FFFFFF",
+                                fontSize: "16px",
+                                cursor: "pointer",
+                                padding: "14px 32px",
+                                borderRadius: "8px",
+                                fontWeight: "600",
+                                transition: "all 0.2s ease",
+                                boxShadow: `0 4px 14px ${theme.accent}40`,
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = theme.accentHover;
+                                e.target.style.transform = "translateY(-2px)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = theme.accent;
+                                e.target.style.transform = "translateY(0)";
+                            }}
+                        >
+                            Start Coding Free
+                        </button>
                     </SignedOut>
                     <SignedIn>
                         <Link
