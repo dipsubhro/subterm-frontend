@@ -11,16 +11,58 @@ import { useUser } from "@clerk/clerk-react";
 import { useState, useRef, useEffect } from "react";
 import Terminal from "../components/Terminal";
 import FileTree from "../components/Tree";
-import AceEditor from "react-ace";
+import Editor from "@monaco-editor/react";
 import SaveButton from "../components/SaveButton";
 import NewFolderButton from "../components/NewFolderButton";
 import NewFileButton from "../components/NewFileButton";
 import "../App.css";
 
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-monokai";
-import "ace-builds/src-noconflict/ext-language_tools";
-import "ace-builds/src-noconflict/theme-dracula";
+// Helper function to determine Monaco language from file path
+const getLanguageFromPath = (filePath) => {
+  if (!filePath) return "plaintext";
+  
+  const ext = filePath.split(".").pop()?.toLowerCase();
+  const languageMap = {
+    js: "javascript",
+    jsx: "javascript",
+    ts: "typescript",
+    tsx: "typescript",
+    py: "python",
+    html: "html",
+    css: "css",
+    scss: "scss",
+    less: "less",
+    json: "json",
+    md: "markdown",
+    yaml: "yaml",
+    yml: "yaml",
+    xml: "xml",
+    sql: "sql",
+    sh: "shell",
+    bash: "shell",
+    zsh: "shell",
+    go: "go",
+    rs: "rust",
+    java: "java",
+    c: "c",
+    cpp: "cpp",
+    h: "c",
+    hpp: "cpp",
+    php: "php",
+    rb: "ruby",
+    swift: "swift",
+    kt: "kotlin",
+    scala: "scala",
+    r: "r",
+    lua: "lua",
+    dockerfile: "dockerfile",
+    graphql: "graphql",
+    vue: "vue",
+    svelte: "svelte",
+  };
+  
+  return languageMap[ext] || "plaintext";
+};
 
 function WebIDE() {
   const { isSignedIn } = useUser();
@@ -178,27 +220,61 @@ function WebIDE() {
             </div>
           </div>
 
-          <AceEditor
+          <Editor
             value={selectedFileContent}
-            onChange={(newValue) => setSelectedFileContent(newValue)}
-            mode="javascript"
-            theme="dracula"
-            name="editor"
-            width="100%"
-            height="100%"
-            fontSize={16}
-            enableBasicAutocompletion
-            enableLiveAutocompletion
-            enableSnippets
-            lineHeight={19}
-            showPrintMargin
-            showGutter
-            highlightActiveLine
-            setOptions={{
-              showLineNumbers: true,
+            onChange={(newValue) => setSelectedFileContent(newValue || "")}
+            language={getLanguageFromPath(selectedFilePath)}
+            theme="vs-dark"
+            options={{
+              fontSize: 16,
+              lineHeight: 24,
+              minimap: { enabled: true },
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
               tabSize: 2,
-              cursorStyle: "ace",
-              $blockScrolling: true,
+              wordWrap: "on",
+              cursorBlinking: "smooth",
+              cursorSmoothCaretAnimation: "on",
+              smoothScrolling: true,
+              // IntelliSense settings
+              quickSuggestions: {
+                other: true,
+                comments: true,
+                strings: true,
+              },
+              suggestOnTriggerCharacters: true,
+              acceptSuggestionOnEnter: "on",
+              tabCompletion: "on",
+              wordBasedSuggestions: "allDocuments",
+              parameterHints: { enabled: true },
+              suggest: {
+                showKeywords: true,
+                showSnippets: true,
+                showClasses: true,
+                showFunctions: true,
+                showVariables: true,
+                showWords: true,
+                showProperties: true,
+                showMethods: true,
+                showReferences: true,
+                insertMode: "insert",
+              },
+              // Additional editor features
+              formatOnPaste: true,
+              formatOnType: true,
+              autoClosingBrackets: "always",
+              autoClosingQuotes: "always",
+              autoSurround: "languageDefined",
+              bracketPairColorization: { enabled: true },
+              guides: {
+                bracketPairs: true,
+                indentation: true,
+              },
+              folding: true,
+              foldingHighlight: true,
+              showFoldingControls: "mouseover",
+              renderLineHighlight: "all",
+              lineNumbers: "on",
             }}
           />
         </div>
