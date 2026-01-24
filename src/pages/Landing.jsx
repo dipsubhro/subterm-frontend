@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, UserButton, useAuth } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { SignInModal, SignUpModal } from "../components/AuthModal";
 import { theme } from "../theme";
@@ -126,6 +126,7 @@ const Typewriter = ({ lines, speed = 50, deleteSpeed = 30, pauseTime = 2000 }) =
 };
 
 export default function Landing() {
+    const { isLoaded } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [showSignIn, setShowSignIn] = useState(false);
     const [showSignUp, setShowSignUp] = useState(false);
@@ -183,72 +184,84 @@ export default function Landing() {
                     <span style={{ fontSize: "20px", fontWeight: "700", color: theme.accent }}>SubTerm</span>
                 </div>
                 <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                    <SignedOut>
-                        <button
-                            onClick={() => setShowSignIn(true)}
-                            style={{
-                                background: "transparent",
-                                border: "none",
-                                color: theme.foreground,
-                                fontSize: "14px",
-                                cursor: "pointer",
-                                padding: "8px 16px",
-                                transition: "color 0.2s ease",
-                            }}
-                            onMouseEnter={(e) => (e.target.style.color = theme.accent)}
-                            onMouseLeave={(e) => (e.target.style.color = theme.foreground)}
-                        >
-                            Sign In
-                        </button>
-                        <button
-                            onClick={() => setShowSignUp(true)}
-                            style={{
-                                background: theme.accent,
-                                border: "none",
-                                color: "#FFFFFF",
-                                fontSize: "14px",
-                                cursor: "pointer",
-                                padding: "8px 20px",
-                                borderRadius: "6px",
-                                fontWeight: "500",
-                                transition: "background 0.2s ease",
-                            }}
-                            onMouseEnter={(e) => (e.target.style.background = theme.accentHover)}
-                            onMouseLeave={(e) => (e.target.style.background = theme.accent)}
-                        >
-                            Get Started
-                        </button>
-                    </SignedOut>
-                    <SignedIn>
-                        <Link
-                            to="/webide"
-                            style={{
-                                background: theme.accent,
-                                color: "#FFFFFF",
-                                fontSize: "14px",
-                                padding: "8px 20px",
-                                borderRadius: "6px",
-                                fontWeight: "500",
-                                textDecoration: "none",
-                                transition: "background 0.2s ease",
-                            }}
-                            onMouseEnter={(e) => (e.target.style.background = theme.accentHover)}
-                            onMouseLeave={(e) => (e.target.style.background = theme.accent)}
-                        >
-                            Open IDE
-                        </Link>
-                        <UserButton
-                            afterSignOutUrl="/"
-                            appearance={{
-                                elements: {
-                                    avatarBox: {
-                                        width: "36px",
-                                        height: "36px",
-                                    },
-                                },
-                            }}
-                        />
-                    </SignedIn>
+                    {!isLoaded ? (
+                        <div style={{
+                            width: "120px",
+                            height: "36px",
+                            background: theme.gutter,
+                            borderRadius: "6px",
+                            animation: "pulse 1.5s ease-in-out infinite",
+                        }} />
+                    ) : (
+                        <>
+                            <SignedOut>
+                                <button
+                                    onClick={() => setShowSignIn(true)}
+                                    style={{
+                                        background: "transparent",
+                                        border: "none",
+                                        color: theme.foreground,
+                                        fontSize: "14px",
+                                        cursor: "pointer",
+                                        padding: "8px 16px",
+                                        transition: "color 0.2s ease",
+                                    }}
+                                    onMouseEnter={(e) => (e.target.style.color = theme.accent)}
+                                    onMouseLeave={(e) => (e.target.style.color = theme.foreground)}
+                                >
+                                    Sign In
+                                </button>
+                                <button
+                                    onClick={() => setShowSignUp(true)}
+                                    style={{
+                                        background: theme.accent,
+                                        border: "none",
+                                        color: "#FFFFFF",
+                                        fontSize: "14px",
+                                        cursor: "pointer",
+                                        padding: "8px 20px",
+                                        borderRadius: "6px",
+                                        fontWeight: "500",
+                                        transition: "background 0.2s ease",
+                                    }}
+                                    onMouseEnter={(e) => (e.target.style.background = theme.accentHover)}
+                                    onMouseLeave={(e) => (e.target.style.background = theme.accent)}
+                                >
+                                    Get Started
+                                </button>
+                            </SignedOut>
+                            <SignedIn>
+                                <Link
+                                    to="/webide"
+                                    style={{
+                                        background: theme.accent,
+                                        color: "#FFFFFF",
+                                        fontSize: "14px",
+                                        padding: "8px 20px",
+                                        borderRadius: "6px",
+                                        fontWeight: "500",
+                                        textDecoration: "none",
+                                        transition: "background 0.2s ease",
+                                    }}
+                                    onMouseEnter={(e) => (e.target.style.background = theme.accentHover)}
+                                    onMouseLeave={(e) => (e.target.style.background = theme.accent)}
+                                >
+                                    Open IDE
+                                </Link>
+                                <UserButton
+                                    afterSignOutUrl="/"
+                                    appearance={{
+                                        elements: {
+                                            avatarBox: {
+                                                width: "36px",
+                                                height: "36px",
+                                            },
+                                        },
+                                    }}
+                                />
+                            </SignedIn>
+                        </>
+                    )}
                 </div>
             </nav>
 
@@ -322,60 +335,72 @@ export default function Landing() {
                 </p>
 
                 <div style={{ display: "flex", gap: "16px", marginBottom: "60px" }}>
-                    <SignedOut>
-                        <button
-                            onClick={() => setShowSignUp(true)}
-                            style={{
-                                background: theme.accent,
-                                border: "none",
-                                color: "#FFFFFF",
-                                fontSize: "16px",
-                                cursor: "pointer",
-                                padding: "14px 32px",
-                                borderRadius: "8px",
-                                fontWeight: "600",
-                                transition: "all 0.2s ease",
-                                boxShadow: `0 4px 14px ${theme.accent}40`,
-                            }}
-                            onMouseEnter={(e) => {
-                                e.target.style.background = theme.accentHover;
-                                e.target.style.transform = "translateY(-2px)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.target.style.background = theme.accent;
-                                e.target.style.transform = "translateY(0)";
-                            }}
-                        >
-                            Start Coding Free
-                        </button>
-                    </SignedOut>
-                    <SignedIn>
-                        <Link
-                            to="/webide"
-                            style={{
-                                background: theme.accent,
-                                color: "#FFFFFF",
-                                fontSize: "16px",
-                                padding: "14px 32px",
-                                borderRadius: "8px",
-                                fontWeight: "600",
-                                textDecoration: "none",
-                                transition: "all 0.2s ease",
-                                boxShadow: `0 4px 14px ${theme.accent}40`,
-                                display: "inline-block",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.target.style.background = theme.accentHover;
-                                e.target.style.transform = "translateY(-2px)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.target.style.background = theme.accent;
-                                e.target.style.transform = "translateY(0)";
-                            }}
-                        >
-                            Open IDE →
-                        </Link>
-                    </SignedIn>
+                    {!isLoaded ? (
+                        <div style={{
+                            width: "180px",
+                            height: "48px",
+                            background: theme.gutter,
+                            borderRadius: "8px",
+                            animation: "pulse 1.5s ease-in-out infinite",
+                        }} />
+                    ) : (
+                        <>
+                            <SignedOut>
+                                <button
+                                    onClick={() => setShowSignUp(true)}
+                                    style={{
+                                        background: theme.accent,
+                                        border: "none",
+                                        color: "#FFFFFF",
+                                        fontSize: "16px",
+                                        cursor: "pointer",
+                                        padding: "14px 32px",
+                                        borderRadius: "8px",
+                                        fontWeight: "600",
+                                        transition: "all 0.2s ease",
+                                        boxShadow: `0 4px 14px ${theme.accent}40`,
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = theme.accentHover;
+                                        e.target.style.transform = "translateY(-2px)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = theme.accent;
+                                        e.target.style.transform = "translateY(0)";
+                                    }}
+                                >
+                                    Start Coding Free
+                                </button>
+                            </SignedOut>
+                            <SignedIn>
+                                <Link
+                                    to="/webide"
+                                    style={{
+                                        background: theme.accent,
+                                        color: "#FFFFFF",
+                                        fontSize: "16px",
+                                        padding: "14px 32px",
+                                        borderRadius: "8px",
+                                        fontWeight: "600",
+                                        textDecoration: "none",
+                                        transition: "all 0.2s ease",
+                                        boxShadow: `0 4px 14px ${theme.accent}40`,
+                                        display: "inline-block",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = theme.accentHover;
+                                        e.target.style.transform = "translateY(-2px)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = theme.accent;
+                                        e.target.style.transform = "translateY(0)";
+                                    }}
+                                >
+                                    Open IDE →
+                                </Link>
+                            </SignedIn>
+                        </>
+                    )}
                 </div>
 
                 <CodeBlock />

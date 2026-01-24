@@ -65,10 +65,9 @@ const getLanguageFromPath = (filePath) => {
 };
 
 function WebIDE() {
-  const { isSignedIn } = useUser();
-
-  if (!isSignedIn) return <RedirectToSignIn />;
-
+  const { isSignedIn, isLoaded } = useUser();
+  
+  // All hooks must be called unconditionally (React rules of hooks)
   const [selectedFilePath, setSelectedFilePath] = useState(null);
   const [selectedFileContent, setSelectedFileContent] = useState("");
   const [reloadTree, setReloadTree] = useState(false);
@@ -89,6 +88,51 @@ function WebIDE() {
       .catch((err) => console.error("Failed to load file:", err));
   }, [selectedFilePath]);
 
+  // Show loading while Clerk determines auth state
+  if (!isLoaded) {
+    return (
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        background: "#1E1E1E",
+        color: "#D4D4D4",
+        fontFamily: "'JetBrains Mono', monospace",
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  // Redirect to sign in if not authenticated
+  if (!isSignedIn) return <RedirectToSignIn />;
+
+  // Inline input state for creating files/folders
+  const [isCreating, setIsCreating] = useState(null); // 'file' | 'folder' | null
+  const [newItemName, setNewItemName] = useState("");
+  const [toast, setToast] = useState(null); // { message: string, type: 'success' | 'error' }
+  const inputRef = useRef(null);
+
+  // Auto-focus input when creating
+  useEffect(() => {
+    if (isCreating && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isCreating]);
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
   const handleSave = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API}/file`, {
@@ -101,55 +145,111 @@ function WebIDE() {
       });
 
       const result = await response.json();
-      if (result.error) alert("Error: " + result.error);
+      if (result.error) showToast("Error: " + result.error, 'error');
       else {
-        alert("File saved!");
+        showToast("File saved successfully!");
         setReloadTree(!reloadTree);
       }
     } catch (error) {
       console.error("Save failed:", error);
+      showToast("Save failed!", 'error');
     }
   };
 
-  const createFolder = async () => {
-    const folderName = prompt("Enter folder name:");
-    if (!folderName) return;
-    const response = await fetch(`${import.meta.env.VITE_API}/file`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        path: `${folderName}/.keep`,
-        content: "",
-      }),
-    });
-    const result = await response.json();
-    if (result.error) alert("Error: " + result.error);
-    else {
-      alert("Folder created");
-      setReloadTree(!reloadTree);
+  const startCreatingFolder = () => {
+    setIsCreating('folder');
+    setNewItemName("");
+  };
+
+  const startCreatingFile = () => {
+    setIsCreating('file');
+    setNewItemName("");
+  };
+
+  const cancelCreating = () => {
+    setIsCreating(null);
+    setNewItemName("");
+  };
+
+  const handleCreateSubmit = async (e) => {
+    e.preventDefault();
+    if (!newItemName.trim()) {
+      cancelCreating();
+      return;
+    }
+
+    const itemName = newItemName.trim();
+    const isFolder = isCreating === 'folder';
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API}/file`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: isFolder ? `${itemName}/.keep` : itemName,
+          content: "",
+        }),
+      });
+      const result = await response.json();
+      if (result.error) {
+        showToast("Error: " + result.error, 'error');
+      } else {
+        showToast(`${isFolder ? 'Folder' : 'File'} "${itemName}" created!`);
+        setReloadTree(!reloadTree);
+      }
+    } catch (error) {
+      console.error("Create failed:", error);
+      showToast("Failed to create " + (isFolder ? 'folder' : 'file'), 'error');
+    }
+
+    cancelCreating();
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      cancelCreating();
     }
   };
 
-  const createFile = async () => {
-    const fileName = prompt("Enter file name:");
-    if (!fileName) return;
-    const response = await fetch(`${import.meta.env.VITE_API}/file`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        path: fileName,
-        content: "",
-      }),
-    });
-    const result = await response.json();
-    if (result.error) alert("Error: " + result.error);
-    else {
-      alert("File created");
-      setReloadTree(!reloadTree);
-    }
-  };
   return (
     <div className="playground">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "80px",
+            right: "20px",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            background: toast.type === 'error' ? "#F44336" : "#4CAF50",
+            color: "#FFFFFF",
+            fontSize: "14px",
+            fontWeight: "500",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            zIndex: 1000,
+            animation: "slideIn 0.3s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          {toast.type === 'error' ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          )}
+          {toast.message}
+        </div>
+      )}
+
       <div className="container">
         <div className="files">
           <div
@@ -176,10 +276,100 @@ function WebIDE() {
               {selectedFilePath || "No file selected"}
             </span>
             <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
-              <NewFolderButton onCreateFolder={createFolder} />
-              <NewFileButton onCreateFile={createFile} />
+              <NewFolderButton onCreateFolder={startCreatingFolder} />
+              <NewFileButton onCreateFile={startCreatingFile} />
             </div>
           </div>
+
+          {/* Inline Create Input */}
+          {isCreating && (
+            <form
+              onSubmit={handleCreateSubmit}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "4px 12px",
+                gap: "8px",
+                background: "#252526",
+                borderBottom: "1px solid #2A2A2A",
+              }}
+            >
+              <span style={{ display: "flex", alignItems: "center" }}>
+                {isCreating === 'folder' ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DCDCAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CDCFE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                )}
+              </span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                onKeyDown={handleInputKeyDown}
+                onBlur={() => {
+                  // Small delay to allow form submit to fire first
+                  setTimeout(() => {
+                    if (!newItemName.trim()) cancelCreating();
+                  }, 100);
+                }}
+                placeholder={isCreating === 'folder' ? "folder name..." : "filename.ext"}
+                style={{
+                  flex: 1,
+                  background: "#3C3C3C",
+                  border: "1px solid #007ACC",
+                  borderRadius: "3px",
+                  padding: "4px 8px",
+                  color: "#D4D4D4",
+                  fontSize: "13px",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  outline: "none",
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: "#007ACC",
+                  border: "none",
+                  borderRadius: "3px",
+                  padding: "4px 8px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                title="Create"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={cancelCreating}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  borderRadius: "3px",
+                  padding: "4px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                title="Cancel (Esc)"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#858585" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </form>
+          )}
+
           <FileTree onFileClick={setSelectedFilePath} key={reloadTree} />
         </div>
 
