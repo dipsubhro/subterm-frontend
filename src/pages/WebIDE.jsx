@@ -74,6 +74,11 @@ function WebIDE() {
   const [reloadTree, setReloadTree] = useState(false);
   const editorRef = useRef(null);
 
+  // Mobile state management
+  const [mobileFilesVisible, setMobileFilesVisible] = useState(false);
+  const [mobileTerminalVisible, setMobileTerminalVisible] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+
   useEffect(() => {
     if (!selectedFilePath) return;
     fetch(
@@ -131,6 +136,17 @@ function WebIDE() {
     }
   }, [toast]);
 
+  // Close more menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (moreMenuOpen && !e.target.closest('.more-menu') && !e.target.closest('.more-menu-trigger')) {
+        setMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [moreMenuOpen]);
+
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
   };
@@ -156,16 +172,19 @@ function WebIDE() {
       console.error("Save failed:", error);
       showToast("Save failed!", 'error');
     }
+    setMoreMenuOpen(false);
   };
 
   const startCreatingFolder = () => {
     setIsCreating('folder');
     setNewItemName("");
+    setMoreMenuOpen(false);
   };
 
   const startCreatingFile = () => {
     setIsCreating('file');
     setNewItemName("");
+    setMoreMenuOpen(false);
   };
 
   const cancelCreating = () => {
@@ -213,11 +232,47 @@ function WebIDE() {
     }
   };
 
+  // Mobile panel toggle handlers
+  const toggleMobileFiles = () => {
+    setMobileFilesVisible(!mobileFilesVisible);
+    setMobileTerminalVisible(false);
+    setMoreMenuOpen(false);
+  };
+
+  const toggleMobileTerminal = () => {
+    setMobileTerminalVisible(!mobileTerminalVisible);
+    setMobileFilesVisible(false);
+    setMoreMenuOpen(false);
+  };
+
+  const closeMobilePanels = () => {
+    setMobileFilesVisible(false);
+    setMobileTerminalVisible(false);
+    setMoreMenuOpen(false);
+  };
+
+  const handleMobileFileClick = (path) => {
+    setSelectedFilePath(path);
+    setMobileFilesVisible(false);
+  };
+
+  const handleGitHubImport = () => {
+    setIsGitHubModalOpen(true);
+    setMoreMenuOpen(false);
+  };
+
   return (
     <div className="playground">
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${mobileFilesVisible || mobileTerminalVisible || moreMenuOpen ? 'active' : ''}`}
+        onClick={closeMobilePanels}
+      />
+
       {/* Toast Notification */}
       {toast && (
         <div
+          className="toast-notification"
           style={{
             position: "fixed",
             bottom: "80px",
@@ -229,7 +284,7 @@ function WebIDE() {
             fontSize: "14px",
             fontWeight: "500",
             boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-            zIndex: 1000,
+            zIndex: 1002,
             animation: "slideIn 0.3s ease",
             display: "flex",
             alignItems: "center",
@@ -283,7 +338,8 @@ function WebIDE() {
             SubTerm
           </span>
         </div>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+        {/* Desktop buttons - visible only on larger screens */}
+        <div className="desktop-only" style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           {/* GitHub Import Button */}
           <button
             onClick={() => setIsGitHubModalOpen(true)}
@@ -318,10 +374,26 @@ function WebIDE() {
           <SaveButton onSave={handleSave} />
           <UserButton />
         </div>
+        {/* Mobile - only show UserButton in topbar */}
+        <div className="mobile-only" style={{ display: "none" }}>
+          <UserButton />
+        </div>
       </div>
 
       <div className="container">
-        <div className="files">
+        <div className={`files ${mobileFilesVisible ? 'mobile-visible' : ''}`}>
+          {/* Mobile close button */}
+          <button 
+            className="panel-close-btn"
+            onClick={() => setMobileFilesVisible(false)}
+            aria-label="Close file explorer"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
           <div
             className="selected-file-label"
             style={{
@@ -447,7 +519,10 @@ function WebIDE() {
             </form>
           )}
 
-          <FileTree onFileClick={setSelectedFilePath} key={reloadTree} />
+          <FileTree 
+            onFileClick={handleMobileFileClick} 
+            key={reloadTree} 
+          />
         </div>
 
         <div className="editor">
@@ -457,9 +532,9 @@ function WebIDE() {
             language={getLanguageFromPath(selectedFilePath)}
             theme="vs-dark"
             options={{
-              fontSize: 16,
-              lineHeight: 24,
-              minimap: { enabled: true },
+              fontSize: 14,
+              lineHeight: 22,
+              minimap: { enabled: window.innerWidth > 768 },
               scrollBeyondLastLine: false,
               automaticLayout: true,
               tabSize: 2,
@@ -511,8 +586,143 @@ function WebIDE() {
         </div>
       </div>
 
-      <div className="terminal">
+      <div className={`terminal ${mobileTerminalVisible ? 'mobile-visible' : ''}`}>
+        {/* Mobile terminal header */}
+        <div 
+          className="terminal-mobile-header"
+          style={{
+            display: 'none',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '8px 12px',
+            borderBottom: '1px solid #3A3A3A',
+            marginBottom: '8px',
+          }}
+        >
+          <span style={{ color: '#007ACC', fontWeight: '600', fontSize: '13px' }}>Terminal</span>
+          <button 
+            onClick={() => setMobileTerminalVisible(false)}
+            style={{
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              color: '#D4D4D4',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '12px',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Close
+          </button>
+        </div>
         <Terminal />
+      </div>
+
+      {/* Mobile Bottom Toolbar */}
+      <div className="mobile-toolbar">
+        {/* Files Toggle */}
+        <button 
+          className={`mobile-toolbar-btn ${mobileFilesVisible ? 'active' : ''}`}
+          onClick={toggleMobileFiles}
+          aria-label="Toggle file explorer"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Files</span>
+        </button>
+
+        {/* Editor (always focused visually) */}
+        <button 
+          className={`mobile-toolbar-btn ${!mobileFilesVisible && !mobileTerminalVisible ? 'active' : ''}`}
+          onClick={closeMobilePanels}
+          aria-label="Focus editor"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>Editor</span>
+        </button>
+
+        {/* Terminal Toggle */}
+        <button 
+          className={`mobile-toolbar-btn ${mobileTerminalVisible ? 'active' : ''}`}
+          onClick={toggleMobileTerminal}
+          aria-label="Toggle terminal"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+          <span>Terminal</span>
+        </button>
+
+        {/* Save Button */}
+        <button 
+          className="mobile-toolbar-btn"
+          onClick={handleSave}
+          aria-label="Save file"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Save</span>
+        </button>
+
+        {/* More Menu Trigger */}
+        <button 
+          className={`mobile-toolbar-btn more-menu-trigger ${moreMenuOpen ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMoreMenuOpen(!moreMenuOpen);
+          }}
+          aria-label="More options"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1"></circle>
+            <circle cx="12" cy="5" r="1"></circle>
+            <circle cx="12" cy="19" r="1"></circle>
+          </svg>
+          <span>More</span>
+        </button>
+      </div>
+
+      {/* More Menu Dropdown */}
+      <div className={`more-menu ${moreMenuOpen ? 'active' : ''}`}>
+        <button className="more-menu-item" onClick={handleGitHubImport}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+          </svg>
+          Import from GitHub
+        </button>
+        <div className="more-menu-divider"></div>
+        <button className="more-menu-item" onClick={startCreatingFile}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          New File
+        </button>
+        <button className="more-menu-item" onClick={startCreatingFolder}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            <line x1="12" y1="11" x2="12" y2="17"></line>
+            <line x1="9" y1="14" x2="15" y2="14"></line>
+          </svg>
+          New Folder
+        </button>
       </div>
 
       {/* GitHub Import Modal */}
@@ -524,6 +734,16 @@ function WebIDE() {
           setReloadTree(!reloadTree);
         }}
       />
+
+      {/* Additional mobile styles inline for show/hide */}
+      <style>{`
+        @media (max-width: 768px) {
+          .mobile-only { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-only { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }
