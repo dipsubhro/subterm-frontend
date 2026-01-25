@@ -292,9 +292,12 @@ function WebIDE() {
                 gap: "8px",
                 background: "#252526",
                 borderBottom: "1px solid #2A2A2A",
+                overflow: "hidden",
+                maxWidth: "100%",
+                boxSizing: "border-box",
               }}
             >
-              <span style={{ display: "flex", alignItems: "center" }}>
+              <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
                 {isCreating === 'folder' ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DCDCAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -321,6 +324,7 @@ function WebIDE() {
                 placeholder={isCreating === 'folder' ? "folder name..." : "filename.ext"}
                 style={{
                   flex: 1,
+                  minWidth: 0,
                   background: "#3C3C3C",
                   border: "1px solid #007ACC",
                   borderRadius: "3px",
@@ -329,6 +333,7 @@ function WebIDE() {
                   fontSize: "13px",
                   fontFamily: "'JetBrains Mono', monospace",
                   outline: "none",
+                  boxSizing: "border-box",
                 }}
               />
               <button
@@ -341,6 +346,7 @@ function WebIDE() {
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
+                  flexShrink: 0,
                 }}
                 title="Create"
               >
@@ -359,6 +365,7 @@ function WebIDE() {
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
+                  flexShrink: 0,
                 }}
                 title="Cancel (Esc)"
               >
