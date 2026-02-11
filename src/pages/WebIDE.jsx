@@ -15,7 +15,8 @@ import Editor from "@monaco-editor/react";
 import SaveButton from "../components/SaveButton";
 import NewFolderButton from "../components/NewFolderButton";
 import NewFileButton from "../components/NewFileButton";
-import GitHubImportModal from "../components/GitHubImportModal";
+
+import GitHubSidebar from "../components/GitHubSidebar";
 import "../App.css";
 
 // Helper function to determine Monaco language from file path
@@ -110,7 +111,6 @@ function WebIDE() {
   const [isCreating, setIsCreating] = useState(null); // 'file' | 'folder' | null
   const [newItemName, setNewItemName] = useState("");
   const [toast, setToast] = useState(null); // { message: string, type: 'success' | 'error' }
-  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const inputRef = useRef(null);
 
   // Auto-focus input when creating
@@ -248,10 +248,7 @@ function WebIDE() {
     setMobileFilesVisible(false);
   };
 
-  const handleGitHubImport = () => {
-    setIsGitHubModalOpen(true);
-    setMoreMenuOpen(false);
-  };
+
 
   return (
     <div className="playground">
@@ -292,17 +289,6 @@ function WebIDE() {
         </div>
         {/* Desktop buttons - visible only on larger screens */}
         <div className="desktop-only actions">
-          {/* GitHub Import Button */}
-          <button
-            className="github-button"
-            onClick={() => setIsGitHubModalOpen(true)}
-            title="Import from GitHub"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-            </svg>
-            Import
-          </button>
           <SaveButton onSave={handleSave} />
           <UserButton />
         </div>
@@ -313,6 +299,7 @@ function WebIDE() {
       </div>
 
       <div className="container">
+        {/* Left Sidebar: File Manager */}
         <div className={`files ${mobileFilesVisible ? 'mobile-visible' : ''}`}>
           {/* Mobile close button */}
           <button 
@@ -384,82 +371,94 @@ function WebIDE() {
           />
         </div>
 
-        <div className="editor">
-          <Editor
-            value={selectedFileContent}
-            onChange={(newValue) => setSelectedFileContent(newValue || "")}
-            language={getLanguageFromPath(selectedFilePath)}
-            theme="vs-dark"
-            options={{
-              fontSize: 14,
-              lineHeight: 22,
-              minimap: { enabled: window.innerWidth > 768 },
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              tabSize: 2,
-              wordWrap: "on",
-              cursorBlinking: "smooth",
-              cursorSmoothCaretAnimation: "on",
-              smoothScrolling: true,
-              // IntelliSense settings
-              quickSuggestions: {
-                other: true,
-                comments: true,
-                strings: true,
-              },
-              suggestOnTriggerCharacters: true,
-              acceptSuggestionOnEnter: "on",
-              tabCompletion: "on",
-              wordBasedSuggestions: "allDocuments",
-              parameterHints: { enabled: true },
-              suggest: {
-                showKeywords: true,
-                showSnippets: true,
-                showClasses: true,
-                showFunctions: true,
-                showVariables: true,
-                showWords: true,
-                showProperties: true,
-                showMethods: true,
-                showReferences: true,
-                insertMode: "insert",
-              },
-              // Additional editor features
-              formatOnPaste: true,
-              formatOnType: true,
-              autoClosingBrackets: "always",
-              autoClosingQuotes: "always",
-              autoSurround: "languageDefined",
-              bracketPairColorization: { enabled: true },
-              guides: {
-                bracketPairs: true,
-                indentation: true,
-              },
-              folding: true,
-              foldingHighlight: true,
-              showFoldingControls: "mouseover",
-              renderLineHighlight: "all",
-              lineNumbers: "on",
-            }}
-          />
-        </div>
-      </div>
+        {/* Middle Section: Editor & Terminal */}
+        <div className="middle-section">
+            <div className="editor">
+            <Editor
+                value={selectedFileContent}
+                onChange={(newValue) => setSelectedFileContent(newValue || "")}
+                language={getLanguageFromPath(selectedFilePath)}
+                theme="vs-dark"
+                options={{
+                fontSize: 14,
+                lineHeight: 22,
+                minimap: { enabled: window.innerWidth > 768 },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                tabSize: 2,
+                wordWrap: "on",
+                cursorBlinking: "smooth",
+                cursorSmoothCaretAnimation: "on",
+                smoothScrolling: true,
+                // IntelliSense settings
+                quickSuggestions: {
+                    other: true,
+                    comments: true,
+                    strings: true,
+                },
+                suggestOnTriggerCharacters: true,
+                acceptSuggestionOnEnter: "on",
+                tabCompletion: "on",
+                wordBasedSuggestions: "allDocuments",
+                parameterHints: { enabled: true },
+                suggest: {
+                    showKeywords: true,
+                    showSnippets: true,
+                    showClasses: true,
+                    showFunctions: true,
+                    showVariables: true,
+                    showWords: true,
+                    showProperties: true,
+                    showMethods: true,
+                    showReferences: true,
+                    insertMode: "insert",
+                },
+                // Additional editor features
+                formatOnPaste: true,
+                formatOnType: true,
+                autoClosingBrackets: "always",
+                autoClosingQuotes: "always",
+                autoSurround: "languageDefined",
+                bracketPairColorization: { enabled: true },
+                guides: {
+                    bracketPairs: true,
+                    indentation: true,
+                },
+                folding: true,
+                foldingHighlight: true,
+                showFoldingControls: "mouseover",
+                renderLineHighlight: "all",
+                lineNumbers: "on",
+                }}
+            />
+            </div>
 
-      <div className={`terminal ${mobileTerminalVisible ? 'mobile-visible' : ''}`}>
-        {/* Mobile terminal header */}
-        <div className="terminal-mobile-header">
-          <span className="title">Terminal</span>
-          <button 
-            className="icon-button"
-            onClick={() => setMobileTerminalVisible(false)}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+            <div className={`terminal ${mobileTerminalVisible ? 'mobile-visible' : ''}`}>
+            {/* Mobile terminal header */}
+            <div className="terminal-mobile-header">
+                <span className="title">Terminal</span>
+                <button 
+                className="icon-button"
+                onClick={() => setMobileTerminalVisible(false)}
+                >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                </button>
+            </div>
+            <Terminal />
+            </div>
         </div>
-        <Terminal />
+
+        {/* Right Sidebar: GitHub Repos */}
+        <GitHubSidebar 
+          onImportSuccess={(message) => {
+            showToast(message);
+            setReloadTree(!reloadTree);
+          }}
+        />
+
       </div>
 
       {/* Mobile Bottom Toolbar */}
@@ -536,13 +535,6 @@ function WebIDE() {
 
       {/* More Menu Dropdown */}
       <div className={`more-menu ${moreMenuOpen ? 'active' : ''}`}>
-        <button className="more-menu-item" onClick={handleGitHubImport}>
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-          </svg>
-          Import from GitHub
-        </button>
-        <div className="more-menu-divider"></div>
         <button className="more-menu-item" onClick={startCreatingFile}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -561,16 +553,6 @@ function WebIDE() {
           New Folder
         </button>
       </div>
-
-      {/* GitHub Import Modal */}
-      <GitHubImportModal
-        isOpen={isGitHubModalOpen}
-        onClose={() => setIsGitHubModalOpen(false)}
-        onImportSuccess={(message) => {
-          showToast(message);
-          setReloadTree(!reloadTree);
-        }}
-      />
 
       {/* Mobile styles are now in App.css */}
     </div>
