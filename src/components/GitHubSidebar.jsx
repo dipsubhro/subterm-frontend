@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 
-const GitHubSidebar = ({ onImportSuccess }) => {
+const GitHubSidebar = ({ onImportSuccess, className = "" }) => {
   const { user } = useUser();
   const [repos, setRepos] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -165,7 +165,7 @@ const GitHubSidebar = ({ onImportSuccess }) => {
 
 
   return (
-    <div className="github-sidebar">
+    <div className={`github-sidebar ${className}`}>
         <div className="sidebar-header">
             <h3>GitHub</h3>
         </div>

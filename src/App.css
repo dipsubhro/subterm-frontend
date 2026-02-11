@@ -1107,6 +1107,24 @@ body {
     display: flex !important;
   }
 
+  /* GitHub Sidebar - slide from right overlay */
+  .github-sidebar {
+    position: fixed;
+    right: 0;
+    top: var(--topbar-height);
+    bottom: var(--mobile-toolbar-height);
+    width: 85vw;
+    max-width: 320px;
+    z-index: var(--z-panel);
+    transform: translateX(100%);
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
+    transition: transform var(--transition-normal);
+  }
+
+  .github-sidebar.mobile-visible {
+    transform: translateX(0);
+  }
+
   /* Toast adjustments for mobile */
   .toast-notification {
     bottom: calc(var(--mobile-toolbar-height) + var(--space-3));

@@ -78,6 +78,7 @@ function WebIDE() {
   // Mobile state management
   const [mobileFilesVisible, setMobileFilesVisible] = useState(false);
   const [mobileTerminalVisible, setMobileTerminalVisible] = useState(false);
+  const [mobileGitHubVisible, setMobileGitHubVisible] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -228,18 +229,28 @@ function WebIDE() {
   const toggleMobileFiles = () => {
     setMobileFilesVisible(!mobileFilesVisible);
     setMobileTerminalVisible(false);
+    setMobileGitHubVisible(false);
     setMoreMenuOpen(false);
   };
 
   const toggleMobileTerminal = () => {
     setMobileTerminalVisible(!mobileTerminalVisible);
     setMobileFilesVisible(false);
+    setMobileGitHubVisible(false);
+    setMoreMenuOpen(false);
+  };
+
+  const toggleMobileGitHub = () => {
+    setMobileGitHubVisible(!mobileGitHubVisible);
+    setMobileFilesVisible(false);
+    setMobileTerminalVisible(false);
     setMoreMenuOpen(false);
   };
 
   const closeMobilePanels = () => {
     setMobileFilesVisible(false);
     setMobileTerminalVisible(false);
+    setMobileGitHubVisible(false);
     setMoreMenuOpen(false);
   };
 
@@ -254,7 +265,7 @@ function WebIDE() {
     <div className="playground">
       {/* Mobile Overlay */}
       <div 
-        className={`mobile-overlay ${mobileFilesVisible || mobileTerminalVisible || moreMenuOpen ? 'active' : ''}`}
+        className={`mobile-overlay ${mobileFilesVisible || mobileTerminalVisible || mobileGitHubVisible || moreMenuOpen ? 'active' : ''}`}
         onClick={closeMobilePanels}
       />
 
@@ -453,6 +464,7 @@ function WebIDE() {
 
         {/* Right Sidebar: GitHub Repos */}
         <GitHubSidebar 
+          className={mobileGitHubVisible ? 'mobile-visible' : ''}
           onImportSuccess={(message) => {
             showToast(message);
             setReloadTree(!reloadTree);
@@ -499,6 +511,18 @@ function WebIDE() {
             <line x1="12" y1="19" x2="20" y2="19"></line>
           </svg>
           <span>Terminal</span>
+        </button>
+
+        {/* GitHub Toggle */}
+        <button 
+          className={`mobile-toolbar-btn ${mobileGitHubVisible ? 'active' : ''}`}
+          onClick={toggleMobileGitHub}
+          aria-label="Toggle GitHub"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+          <span>GitHub</span>
         </button>
 
         {/* Save Button */}
