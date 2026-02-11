@@ -1,4 +1,5 @@
 import { Terminal as XTerminal } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
 import { useEffect, useRef } from "react";
 import socket from "../socket";
 import "@xterm/xterm/css/xterm.css";
@@ -12,8 +13,10 @@ const Terminal = () => {
       return;
     }
     isRendered.current = true;
+
+    const fitAddon = new FitAddon();
+
     const term = new XTerminal({
-      rows: 10,
       cursorBlink: true,
       fontFamily: '"JetBrains Mono", monospace',
       fontSize: 14,
@@ -26,7 +29,16 @@ const Terminal = () => {
       },
     });
 
+    term.loadAddon(fitAddon);
     term.open(terminalRef.current);
+
+    // Fit terminal and notify server of the new size
+    const fitAndResize = () => {
+      fitAddon.fit();
+      socket.emit("terminal:resize", { cols: term.cols, rows: term.rows });
+    };
+
+    fitAndResize();
 
     term.onData((data) => {
       socket.emit("terminal:write", data);
@@ -35,6 +47,16 @@ const Terminal = () => {
     socket.on("terminal:data", (data) => {
       term.write(data);
     });
+
+    // Re-fit whenever the container is resized
+    const resizeObserver = new ResizeObserver(() => {
+      fitAndResize();
+    });
+    resizeObserver.observe(terminalRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, []);
 
   return <div ref={terminalRef} id="terminal" />;
