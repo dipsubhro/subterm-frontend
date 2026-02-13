@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { useFileStore, useUIStore } from "../store";
 
-const GitHubSidebar = ({ onImportSuccess, className = "" }) => {
+const GitHubSidebar = ({ className = "" }) => {
   const { user } = useUser();
   const [repos, setRepos] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -15,15 +16,16 @@ const GitHubSidebar = ({ onImportSuccess, className = "" }) => {
   const [manualRepoUrl, setManualRepoUrl] = useState("");
   const [activeTab, setActiveTab] = useState("username"); // 'username' | 'url'
 
+  // ── Zustand stores ──
+  const triggerReloadTree = useFileStore((s) => s.triggerReloadTree);
+  const showToast = useUIStore((s) => s.showToast);
+
   // Fetch repos when username changes
   const fetchRepos = async () => {
     if (!githubUsername.trim()) {
       setRepos([]);
       return;
     }
-
-
-
 
     setLoading(true);
     setError("");
@@ -137,7 +139,9 @@ const GitHubSidebar = ({ onImportSuccess, className = "" }) => {
         throw new Error(result.error || "Failed to import repository");
       }
 
-      onImportSuccess?.(result.message || "Repository imported successfully!");
+      // Use Zustand stores directly instead of callback props
+      showToast(result.message || "Repository imported successfully!");
+      triggerReloadTree();
     } catch (err) {
       setError(err.message || "Failed to import repository");
     } finally {

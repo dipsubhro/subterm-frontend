@@ -8,7 +8,7 @@ import {
 } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
 
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import Terminal from "../components/Terminal";
 import FileTree from "../components/Tree";
 import Editor from "@monaco-editor/react";
@@ -18,6 +18,8 @@ import NewFileButton from "../components/NewFileButton";
 
 import GitHubSidebar from "../components/GitHubSidebar";
 import "../App.css";
+
+import { useFileStore, useUIStore, useFileCreationStore } from "../store";
 
 // Helper function to determine Monaco language from file path
 const getLanguageFromPath = (filePath) => {
@@ -69,32 +71,73 @@ const getLanguageFromPath = (filePath) => {
 function WebIDE() {
   const { isSignedIn, isLoaded } = useUser();
   
-  // All hooks must be called unconditionally (React rules of hooks)
-  const [selectedFilePath, setSelectedFilePath] = useState(null);
-  const [selectedFileContent, setSelectedFileContent] = useState("");
-  const [reloadTree, setReloadTree] = useState(false);
+  // ── Zustand stores ──
+  const selectedFilePath = useFileStore((s) => s.selectedFilePath);
+  const selectedFileContent = useFileStore((s) => s.selectedFileContent);
+  const setSelectedFileContent = useFileStore((s) => s.setSelectedFileContent);
+  const reloadTree = useFileStore((s) => s.reloadTree);
+  const triggerReloadTree = useFileStore((s) => s.triggerReloadTree);
+  const fetchFileContent = useFileStore((s) => s.fetchFileContent);
+  const selectFile = useFileStore((s) => s.selectFile);
+  const saveFile = useFileStore((s) => s.saveFile);
+
+  const mobileFilesVisible = useUIStore((s) => s.mobileFilesVisible);
+  const mobileTerminalVisible = useUIStore((s) => s.mobileTerminalVisible);
+  const mobileGitHubVisible = useUIStore((s) => s.mobileGitHubVisible);
+  const moreMenuOpen = useUIStore((s) => s.moreMenuOpen);
+  const toggleMobileFiles = useUIStore((s) => s.toggleMobileFiles);
+  const toggleMobileTerminal = useUIStore((s) => s.toggleMobileTerminal);
+  const toggleMobileGitHub = useUIStore((s) => s.toggleMobileGitHub);
+  const closeMobilePanels = useUIStore((s) => s.closeMobilePanels);
+  const setMobileFilesVisible = useUIStore((s) => s.setMobileFilesVisible);
+  const setMobileTerminalVisible = useUIStore((s) => s.setMobileTerminalVisible);
+  const toggleMoreMenu = useUIStore((s) => s.toggleMoreMenu);
+  const setMoreMenuOpen = useUIStore((s) => s.setMoreMenuOpen);
+  const toast = useUIStore((s) => s.toast);
+  const showToast = useUIStore((s) => s.showToast);
+  const clearToast = useUIStore((s) => s.clearToast);
+
+  const isCreating = useFileCreationStore((s) => s.isCreating);
+  const newItemName = useFileCreationStore((s) => s.newItemName);
+  const startCreatingFolder = useFileCreationStore((s) => s.startCreatingFolder);
+  const startCreatingFile = useFileCreationStore((s) => s.startCreatingFile);
+  const cancelCreating = useFileCreationStore((s) => s.cancelCreating);
+  const setNewItemName = useFileCreationStore((s) => s.setNewItemName);
+  const submitCreation = useFileCreationStore((s) => s.submitCreation);
+
   const editorRef = useRef(null);
+  const inputRef = useRef(null);
 
-  // Mobile state management
-  const [mobileFilesVisible, setMobileFilesVisible] = useState(false);
-  const [mobileTerminalVisible, setMobileTerminalVisible] = useState(false);
-  const [mobileGitHubVisible, setMobileGitHubVisible] = useState(false);
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-
+  // Fetch file content when selectedFilePath changes
   useEffect(() => {
-    if (!selectedFilePath) return;
-    fetch(
-      `${import.meta.env.VITE_API}/file?path=${encodeURIComponent(
-        selectedFilePath
-      )}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) console.error("Server error:", data.error);
-        else setSelectedFileContent(data.content);
-      })
-      .catch((err) => console.error("Failed to load file:", err));
-  }, [selectedFilePath]);
+    fetchFileContent(selectedFilePath);
+  }, [selectedFilePath, fetchFileContent]);
+
+  // Auto-focus input when creating
+  useEffect(() => {
+    if (isCreating && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isCreating]);
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => clearToast(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast, clearToast]);
+
+  // Close more menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (moreMenuOpen && !e.target.closest('.more-menu') && !e.target.closest('.more-menu-trigger')) {
+        setMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [moreMenuOpen, setMoreMenuOpen]);
 
   // Show loading while Clerk determines auth state
   if (!isLoaded) {
@@ -108,115 +151,31 @@ function WebIDE() {
   // Redirect to sign in if not authenticated
   if (!isSignedIn) return <RedirectToSignIn />;
 
-  // Inline input state for creating files/folders
-  const [isCreating, setIsCreating] = useState(null); // 'file' | 'folder' | null
-  const [newItemName, setNewItemName] = useState("");
-  const [toast, setToast] = useState(null); // { message: string, type: 'success' | 'error' }
-  const inputRef = useRef(null);
-
-  // Auto-focus input when creating
-  useEffect(() => {
-    if (isCreating && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isCreating]);
-
-  // Auto-hide toast after 3 seconds
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  // Close more menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (moreMenuOpen && !e.target.closest('.more-menu') && !e.target.closest('.more-menu-trigger')) {
-        setMoreMenuOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [moreMenuOpen]);
-
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-  };
-
   const handleSave = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API}/file`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path: selectedFilePath,
-          content: selectedFileContent,
-        }),
-      });
-
-      const result = await response.json();
-      if (result.error) showToast("Error: " + result.error, 'error');
-      else {
-        showToast("File saved successfully!");
-        setReloadTree(!reloadTree);
-      }
-    } catch (error) {
-      console.error("Save failed:", error);
-      showToast("Save failed!", 'error');
-    }
+    const result = await saveFile();
+    showToast(result.message, result.success ? "success" : "error");
     setMoreMenuOpen(false);
   };
 
-  const startCreatingFolder = () => {
-    setIsCreating('folder');
-    setNewItemName("");
+  const handleStartCreatingFolder = () => {
+    startCreatingFolder();
     setMoreMenuOpen(false);
   };
 
-  const startCreatingFile = () => {
-    setIsCreating('file');
-    setNewItemName("");
+  const handleStartCreatingFile = () => {
+    startCreatingFile();
     setMoreMenuOpen(false);
-  };
-
-  const cancelCreating = () => {
-    setIsCreating(null);
-    setNewItemName("");
   };
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
-    if (!newItemName.trim()) {
-      cancelCreating();
-      return;
-    }
-
-    const itemName = newItemName.trim();
-    const isFolder = isCreating === 'folder';
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API}/file`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path: isFolder ? `${itemName}/.keep` : itemName,
-          content: "",
-        }),
-      });
-      const result = await response.json();
-      if (result.error) {
-        showToast("Error: " + result.error, 'error');
-      } else {
-        showToast(`${isFolder ? 'Folder' : 'File'} "${itemName}" created!`);
-        setReloadTree(!reloadTree);
+    const result = await submitCreation();
+    if (result) {
+      showToast(result.message, result.success ? "success" : "error");
+      if (result.success) {
+        triggerReloadTree();
       }
-    } catch (error) {
-      console.error("Create failed:", error);
-      showToast("Failed to create " + (isFolder ? 'folder' : 'file'), 'error');
     }
-
-    cancelCreating();
   };
 
   const handleInputKeyDown = (e) => {
@@ -225,41 +184,10 @@ function WebIDE() {
     }
   };
 
-  // Mobile panel toggle handlers
-  const toggleMobileFiles = () => {
-    setMobileFilesVisible(!mobileFilesVisible);
-    setMobileTerminalVisible(false);
-    setMobileGitHubVisible(false);
-    setMoreMenuOpen(false);
-  };
-
-  const toggleMobileTerminal = () => {
-    setMobileTerminalVisible(!mobileTerminalVisible);
-    setMobileFilesVisible(false);
-    setMobileGitHubVisible(false);
-    setMoreMenuOpen(false);
-  };
-
-  const toggleMobileGitHub = () => {
-    setMobileGitHubVisible(!mobileGitHubVisible);
-    setMobileFilesVisible(false);
-    setMobileTerminalVisible(false);
-    setMoreMenuOpen(false);
-  };
-
-  const closeMobilePanels = () => {
-    setMobileFilesVisible(false);
-    setMobileTerminalVisible(false);
-    setMobileGitHubVisible(false);
-    setMoreMenuOpen(false);
-  };
-
   const handleMobileFileClick = (path) => {
-    setSelectedFilePath(path);
+    selectFile(path);
     setMobileFilesVisible(false);
   };
-
-
 
   return (
     <div className="playground">
@@ -329,8 +257,8 @@ function WebIDE() {
               {selectedFilePath || "No file selected"}
             </span>
             <div className="file-actions">
-              <NewFolderButton onCreateFolder={startCreatingFolder} />
-              <NewFileButton onCreateFile={startCreatingFile} />
+              <NewFolderButton onCreateFolder={handleStartCreatingFolder} />
+              <NewFileButton onCreateFile={handleStartCreatingFile} />
             </div>
           </div>
 
@@ -465,10 +393,6 @@ function WebIDE() {
         {/* Right Sidebar: GitHub Repos */}
         <GitHubSidebar 
           className={mobileGitHubVisible ? 'mobile-visible' : ''}
-          onImportSuccess={(message) => {
-            showToast(message);
-            setReloadTree(!reloadTree);
-          }}
         />
 
       </div>
@@ -544,7 +468,7 @@ function WebIDE() {
           className={`mobile-toolbar-btn more-menu-trigger ${moreMenuOpen ? 'active' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
-            setMoreMenuOpen(!moreMenuOpen);
+            toggleMoreMenu();
           }}
           aria-label="More options"
         >
@@ -559,7 +483,7 @@ function WebIDE() {
 
       {/* More Menu Dropdown */}
       <div className={`more-menu ${moreMenuOpen ? 'active' : ''}`}>
-        <button className="more-menu-item" onClick={startCreatingFile}>
+        <button className="more-menu-item" onClick={handleStartCreatingFile}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
@@ -568,7 +492,7 @@ function WebIDE() {
           </svg>
           New File
         </button>
-        <button className="more-menu-item" onClick={startCreatingFolder}>
+        <button className="more-menu-item" onClick={handleStartCreatingFolder}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
             <line x1="12" y1="11" x2="12" y2="17"></line>
