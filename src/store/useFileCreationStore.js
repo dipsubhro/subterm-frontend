@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import api from "../lib/axios";
 
 const useFileCreationStore = create((set, get) => ({
   // 'file' | 'folder' | null
@@ -23,15 +24,10 @@ const useFileCreationStore = create((set, get) => ({
     const isFolder = isCreating === "folder";
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API}/file`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path: isFolder ? `${itemName}/.keep` : itemName,
-          content: "",
-        }),
+      const { data: result } = await api.post("/file", {
+        path: isFolder ? `${itemName}/.keep` : itemName,
+        content: "",
       });
-      const result = await response.json();
       if (result.error) {
         return { success: false, message: "Error: " + result.error };
       } else {

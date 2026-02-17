@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import api from "../lib/axios";
 import { useFileStore, useUIStore } from "../store";
 
 const GitHubSidebar = ({ className = "" }) => {
   const { user } = useUser();
+  const queryClient = useQueryClient();
   const [repos, setRepos] = useState([]);
   const [branches, setBranches] = useState([]);
   const [selectedRepo, setSelectedRepo] = useState(null);
@@ -34,21 +38,13 @@ const GitHubSidebar = ({ className = "" }) => {
     setBranches([]);
 
     try {
-      const response = await fetch(
+      const { data } = await axios.get(
         `https://api.github.com/users/${githubUsername}/repos?per_page=100&sort=updated`
       );
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("User not found");
-        }
-        throw new Error("Failed to fetch repositories");
-      }
-
-      const data = await response.json();
       setRepos(data);
     } catch (err) {
-      setError(err.message || "Failed to fetch repositories");
+      const msg = err.response?.status === 404 ? "User not found" : err.message;
+      setError(msg || "Failed to fetch repositories");
     } finally {
       setLoading(false);
     }
@@ -61,15 +57,9 @@ const GitHubSidebar = ({ className = "" }) => {
     setSelectedBranch("");
 
     try {
-      const response = await fetch(
+      const { data } = await axios.get(
         `https://api.github.com/repos/${repo.full_name}/branches`
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch branches");
-      }
-
-      const data = await response.json();
       setBranches(data);
       // Set default branch
       setSelectedBranch(repo.default_branch || (data[0]?.name ?? ""));
@@ -90,6 +80,22 @@ const GitHubSidebar = ({ className = "" }) => {
     setSelectedRepo(repo);
     fetchBranches(repo);
   };
+
+  // Import mutation using TanStack Query + axios
+  const importMutation = useMutation({
+    mutationFn: (payload) => api.post("/github/import", payload).then((res) => res.data),
+    onSuccess: (result) => {
+      showToast(result.message || "Repository imported successfully!");
+      triggerReloadTree();
+      queryClient.invalidateQueries({ queryKey: ["fileTree"] });
+    },
+    onError: (err) => {
+      setError(err.response?.data?.error || err.message || "Failed to import repository");
+    },
+    onSettled: () => {
+      setImporting(false);
+    },
+  });
 
   const handleImport = async () => {
     setImporting(true);
@@ -120,31 +126,9 @@ const GitHubSidebar = ({ className = "" }) => {
         repoName = selectedRepo.name;
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API}/github/import`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            repoUrl,
-            branch,
-            repoName,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to import repository");
-      }
-
-      // Use Zustand stores directly instead of callback props
-      showToast(result.message || "Repository imported successfully!");
-      triggerReloadTree();
+      importMutation.mutate({ repoUrl, branch, repoName });
     } catch (err) {
       setError(err.message || "Failed to import repository");
-    } finally {
       setImporting(false);
     }
   };

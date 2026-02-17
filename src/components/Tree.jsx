@@ -1,5 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Tree } from "react-arborist";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "../lib/axios";
 import socket from "../socket";
 
 const ChevronIcon = ({ isOpen }) => (
@@ -90,30 +92,20 @@ function Node({ node, style, dragHandle }) {
 }
 
 const FileTree = ({ onFileClick }) => {
-  const [treeData, setTreeData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const treeRef = useRef(null);
+  const queryClient = useQueryClient();
 
-  // Fetch tree from new API endpoint
-  const fetchTree = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API}/api/get-tree`);
-      const data = await res.json();
-      setTreeData(data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching file tree:", err);
-      setLoading(false);
-    }
-  };
+  // Fetch tree using TanStack Query + axios
+  const { data: treeData = [], isLoading: loading } = useQuery({
+    queryKey: ["fileTree"],
+    queryFn: () => api.get("/api/get-tree").then((res) => res.data),
+  });
 
   useEffect(() => {
-    fetchTree();
-
-    // Listen for fs-event to trigger silent re-fetch
+    // Listen for fs-event to invalidate the tree cache
     const handleFsEvent = (events) => {
       console.log("[fs-event] Received:", events);
-      fetchTree();
+      queryClient.invalidateQueries({ queryKey: ["fileTree"] });
     };
 
     socket.on("fs-event", handleFsEvent);
@@ -121,7 +113,7 @@ const FileTree = ({ onFileClick }) => {
     return () => {
       socket.off("fs-event", handleFsEvent);
     };
-  }, []);
+  }, [queryClient]);
 
   // Handle node selection
   const handleSelect = (nodes) => {

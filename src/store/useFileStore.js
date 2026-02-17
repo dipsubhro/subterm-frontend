@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import api from "../lib/axios";
 
 const useFileStore = create((set, get) => ({
   // Currently selected file
@@ -18,10 +19,9 @@ const useFileStore = create((set, get) => ({
   fetchFileContent: async (path) => {
     if (!path) return;
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API}/file?path=${encodeURIComponent(path)}`
-      );
-      const data = await res.json();
+      const { data } = await api.get("/file", {
+        params: { path },
+      });
       if (data.error) {
         console.error("Server error:", data.error);
       } else {
@@ -38,16 +38,11 @@ const useFileStore = create((set, get) => ({
     if (!selectedFilePath) return { success: false, message: "No file selected" };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API}/file`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path: selectedFilePath,
-          content: selectedFileContent,
-        }),
+      const { data: result } = await api.post("/file", {
+        path: selectedFilePath,
+        content: selectedFileContent,
       });
 
-      const result = await response.json();
       if (result.error) {
         return { success: false, message: "Error: " + result.error };
       } else {
