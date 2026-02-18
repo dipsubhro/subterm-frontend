@@ -10,7 +10,7 @@ import { useUser } from "@clerk/clerk-react";
 
 import { useRef, useEffect } from "react";
 import Terminal from "../components/Terminal";
-import FileTree from "../components/Tree";
+import FileTree from "../components/tree/FileTree";
 import Editor from "@monaco-editor/react";
 import SaveButton from "../components/SaveButton";
 import NewFolderButton from "../components/NewFolderButton";
