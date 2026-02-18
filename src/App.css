@@ -1193,6 +1193,236 @@ body {
 }
 
 /* ===========================
+   File Tree Component
+   =========================== */
+
+/* --- Tree container --- */
+.tree-root {
+  font-family: var(--font-mono);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.tree-loading {
+  font-family: var(--font-mono);
+  padding: 10px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+/* --- Tree node row --- */
+.tree-node {
+  display: flex;
+  align-items: center;
+  padding: 2px 4px 2px 0;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  user-select: none;
+  position: relative;
+  min-height: 26px;
+}
+
+.tree-node:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.tree-node.selected {
+  background-color: var(--bg-tertiary);
+}
+
+/* --- Chevron slot --- */
+.tree-chevron {
+  width: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* --- Node icon --- */
+.tree-icon {
+  margin-right: 6px;
+  margin-left: 2px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* --- Node name --- */
+.tree-name {
+  font-size: var(--font-size-md);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
+}
+
+.tree-name.git-modified  { color: #E2C08D; }
+.tree-name.git-added     { color: #73C991; }
+.tree-name.git-deleted   { color: #C74E39; }
+.tree-name.git-untracked { color: #73C991; }
+.tree-name.git-renamed   { color: #73B8D4; }
+.tree-name.git-conflicted{ color: #E45454; }
+
+/* --- Git badge --- */
+.tree-git-badge {
+  padding-left: 6px;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+/* --- Hover action bar --- */
+.tree-action-bar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.tree-node:hover .tree-action-bar,
+.tree-action-bar.visible {
+  opacity: 1;
+}
+
+.tree-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.tree-action-btn:hover {
+  background: var(--bg-hover);
+}
+
+/* --- Dropdown menu --- */
+.tree-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 2px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-panel);
+  min-width: 140px;
+  padding: 4px 0;
+  overflow: hidden;
+}
+
+.tree-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: var(--font-size-sm);
+  color: #CCCCCC;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.tree-dropdown-item:hover {
+  background: var(--bg-active);
+}
+
+/* --- Inline input (rename / create) --- */
+.tree-inline-input {
+  background: var(--bg-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  font-family: var(--font-mono);
+  padding: 1px 4px;
+  outline: none;
+  width: 100%;
+  min-width: 80px;
+}
+
+.tree-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tree-create-row {
+  display: flex;
+  align-items: center;
+  padding: 2px 4px 2px 0;
+}
+
+/* --- Delete confirmation --- */
+.tree-name-deleted {
+  color: #C74E39;
+  font-size: var(--font-size-md);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.tree-delete-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: var(--font-size-sm);
+  color: #CCCCCC;
+  background: #3C1F1F;
+  border-radius: var(--radius-sm);
+  margin-left: 4px;
+}
+
+.tree-delete-bar .confirm {
+  background: #C74E39;
+  border: none;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+}
+
+.tree-delete-bar .cancel {
+  background: none;
+  border: 1px solid #555;
+  border-radius: 3px;
+  color: #999;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+/* --- Loading indicator --- */
+.tree-folder-loading {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+
+/* ===========================
    Light Theme (Optional)
    =========================== */
 [data-theme="light"] {

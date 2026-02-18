@@ -13,13 +13,11 @@ import Terminal from "../components/Terminal";
 import FileTree from "../components/tree/FileTree";
 import Editor from "@monaco-editor/react";
 import SaveButton from "../components/SaveButton";
-import NewFolderButton from "../components/NewFolderButton";
-import NewFileButton from "../components/NewFileButton";
 
 import GitHubSidebar from "../components/GitHubSidebar";
 import "../App.css";
 
-import { useFileStore, useUIStore, useFileCreationStore } from "../store";
+import { useFileStore, useUIStore } from "../store";
 
 // Helper function to determine Monaco language from file path
 const getLanguageFromPath = (filePath) => {
@@ -97,28 +95,17 @@ function WebIDE() {
   const showToast = useUIStore((s) => s.showToast);
   const clearToast = useUIStore((s) => s.clearToast);
 
-  const isCreating = useFileCreationStore((s) => s.isCreating);
-  const newItemName = useFileCreationStore((s) => s.newItemName);
-  const startCreatingFolder = useFileCreationStore((s) => s.startCreatingFolder);
-  const startCreatingFile = useFileCreationStore((s) => s.startCreatingFile);
-  const cancelCreating = useFileCreationStore((s) => s.cancelCreating);
-  const setNewItemName = useFileCreationStore((s) => s.setNewItemName);
-  const submitCreation = useFileCreationStore((s) => s.submitCreation);
+
 
   const editorRef = useRef(null);
-  const inputRef = useRef(null);
+
 
   // Fetch file content when selectedFilePath changes
   useEffect(() => {
     fetchFileContent(selectedFilePath);
   }, [selectedFilePath, fetchFileContent]);
 
-  // Auto-focus input when creating
-  useEffect(() => {
-    if (isCreating && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isCreating]);
+
 
   // Auto-hide toast after 3 seconds
   useEffect(() => {
@@ -157,32 +144,7 @@ function WebIDE() {
     setMoreMenuOpen(false);
   };
 
-  const handleStartCreatingFolder = () => {
-    startCreatingFolder();
-    setMoreMenuOpen(false);
-  };
 
-  const handleStartCreatingFile = () => {
-    startCreatingFile();
-    setMoreMenuOpen(false);
-  };
-
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
-    const result = await submitCreation();
-    if (result) {
-      showToast(result.message, result.success ? "success" : "error");
-      if (result.success) {
-        triggerReloadTree();
-      }
-    }
-  };
-
-  const handleInputKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      cancelCreating();
-    }
-  };
 
   const handleMobileFileClick = (path) => {
     selectFile(path);
@@ -256,53 +218,7 @@ function WebIDE() {
             <span className={`file-name ${!selectedFilePath ? 'empty' : ''}`}>
               {selectedFilePath || "No file selected"}
             </span>
-            <div className="file-actions">
-              <NewFolderButton onCreateFolder={handleStartCreatingFolder} />
-              <NewFileButton onCreateFile={handleStartCreatingFile} />
-            </div>
           </div>
-
-          {/* Inline Create Input */}
-          {isCreating && (
-            <form className="inline-create-form" onSubmit={handleCreateSubmit}>
-              <span className="icon">
-                {isCreating === 'folder' ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-folder)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-file)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                  </svg>
-                )}
-              </span>
-              <input
-                ref={inputRef}
-                type="text"
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
-                onKeyDown={handleInputKeyDown}
-                onBlur={() => {
-                  setTimeout(() => {
-                    if (!newItemName.trim()) cancelCreating();
-                  }, 100);
-                }}
-                placeholder={isCreating === 'folder' ? "folder name..." : "filename.ext"}
-              />
-              <button type="submit" className="icon-button" title="Create">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </button>
-              <button type="button" className="icon-button" onClick={cancelCreating} title="Cancel (Esc)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </form>
-          )}
 
           <FileTree 
             onFileClick={handleMobileFileClick} 
@@ -483,22 +399,13 @@ function WebIDE() {
 
       {/* More Menu Dropdown */}
       <div className={`more-menu ${moreMenuOpen ? 'active' : ''}`}>
-        <button className="more-menu-item" onClick={handleStartCreatingFile}>
+        <button className="more-menu-item" onClick={handleSave}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="12" y1="18" x2="12" y2="12"></line>
-            <line x1="9" y1="15" x2="15" y2="15"></line>
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
           </svg>
-          New File
-        </button>
-        <button className="more-menu-item" onClick={handleStartCreatingFolder}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            <line x1="12" y1="11" x2="12" y2="17"></line>
-            <line x1="9" y1="14" x2="15" y2="14"></line>
-          </svg>
-          New Folder
+          Save
         </button>
       </div>
 
