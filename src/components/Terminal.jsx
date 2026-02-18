@@ -48,6 +48,15 @@ const Terminal = () => {
       term.write(data);
     });
 
+    // Send an enter so the shell prints its prompt immediately
+    if (socket.connected) {
+      socket.emit("terminal:write", "clear\n");
+    } else {
+      socket.once("connect", () => {
+        socket.emit("terminal:write", "clear\n");
+      });
+    }
+
     // Re-fit whenever the container is resized
     const resizeObserver = new ResizeObserver(() => {
       fitAndResize();
