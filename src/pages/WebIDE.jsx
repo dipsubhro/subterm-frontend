@@ -200,7 +200,7 @@ function WebIDE() {
         </div>
       </div>
 
-      <PanelGroup direction="horizontal" autoSaveId="ide-layout" className="container">
+      <PanelGroup orientation="horizontal" autoSaveId="ide-layout" className="container">
         {/* Left Sidebar: File Manager */}
         <Panel defaultSize={20} minSize={10} className={`files ${mobileFilesVisible ? 'mobile-visible' : ''}`}>
           {/* Mobile close button */}
@@ -231,7 +231,7 @@ function WebIDE() {
 
         {/* Middle Section: Editor & Terminal */}
         <Panel defaultSize={55} minSize={30}>
-          <PanelGroup direction="vertical" autoSaveId="center-layout" className="middle-section">
+          <PanelGroup orientation="vertical" autoSaveId="center-layout" className="middle-section">
             <Panel defaultSize={65} minSize={20} className="editor">
               <Editor
                 value={selectedFileContent}
