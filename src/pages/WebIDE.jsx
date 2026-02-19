@@ -13,6 +13,7 @@ import Terminal from "../components/Terminal";
 import FileTree from "../components/tree/FileTree";
 import Editor from "@monaco-editor/react";
 import SaveButton from "../components/SaveButton";
+import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
 
 import GitHubSidebar from "../components/GitHubSidebar";
 import "../App.css";
@@ -199,9 +200,9 @@ function WebIDE() {
         </div>
       </div>
 
-      <div className="container">
+      <PanelGroup direction="horizontal" autoSaveId="ide-layout" className="container">
         {/* Left Sidebar: File Manager */}
-        <div className={`files ${mobileFilesVisible ? 'mobile-visible' : ''}`}>
+        <Panel defaultSize={20} minSize={10} className={`files ${mobileFilesVisible ? 'mobile-visible' : ''}`}>
           {/* Mobile close button */}
           <button 
             className="panel-close-btn"
@@ -224,39 +225,41 @@ function WebIDE() {
             onFileClick={handleMobileFileClick} 
             key={reloadTree} 
           />
-        </div>
+        </Panel>
+
+        <PanelResizeHandle className="resize-handle-horizontal" />
 
         {/* Middle Section: Editor & Terminal */}
-        <div className="middle-section">
-            <div className="editor">
-            <Editor
+        <Panel defaultSize={55} minSize={30}>
+          <PanelGroup direction="vertical" autoSaveId="center-layout" className="middle-section">
+            <Panel defaultSize={65} minSize={20} className="editor">
+              <Editor
                 value={selectedFileContent}
                 onChange={(newValue) => setSelectedFileContent(newValue || "")}
                 language={getLanguageFromPath(selectedFilePath)}
                 theme="vs-dark"
                 options={{
-                fontSize: 14,
-                lineHeight: 22,
-                minimap: { enabled: window.innerWidth > 768 },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 2,
-                wordWrap: "on",
-                cursorBlinking: "smooth",
-                cursorSmoothCaretAnimation: "on",
-                smoothScrolling: true,
-                // IntelliSense settings
-                quickSuggestions: {
+                  fontSize: 14,
+                  lineHeight: 22,
+                  minimap: { enabled: window.innerWidth > 768 },
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 2,
+                  wordWrap: "on",
+                  cursorBlinking: "smooth",
+                  cursorSmoothCaretAnimation: "on",
+                  smoothScrolling: true,
+                  quickSuggestions: {
                     other: true,
                     comments: true,
                     strings: true,
-                },
-                suggestOnTriggerCharacters: true,
-                acceptSuggestionOnEnter: "on",
-                tabCompletion: "on",
-                wordBasedSuggestions: "allDocuments",
-                parameterHints: { enabled: true },
-                suggest: {
+                  },
+                  suggestOnTriggerCharacters: true,
+                  acceptSuggestionOnEnter: "on",
+                  tabCompletion: "on",
+                  wordBasedSuggestions: "allDocuments",
+                  parameterHints: { enabled: true },
+                  suggest: {
                     showKeywords: true,
                     showSnippets: true,
                     showClasses: true,
@@ -267,51 +270,59 @@ function WebIDE() {
                     showMethods: true,
                     showReferences: true,
                     insertMode: "insert",
-                },
-                // Additional editor features
-                formatOnPaste: true,
-                formatOnType: true,
-                autoClosingBrackets: "always",
-                autoClosingQuotes: "always",
-                autoSurround: "languageDefined",
-                bracketPairColorization: { enabled: true },
-                guides: {
+                  },
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  autoClosingBrackets: "always",
+                  autoClosingQuotes: "always",
+                  autoSurround: "languageDefined",
+                  bracketPairColorization: { enabled: true },
+                  guides: {
                     bracketPairs: true,
                     indentation: true,
-                },
-                folding: true,
-                foldingHighlight: true,
-                showFoldingControls: "mouseover",
-                renderLineHighlight: "all",
-                lineNumbers: "on",
+                  },
+                  folding: true,
+                  foldingHighlight: true,
+                  showFoldingControls: "mouseover",
+                  renderLineHighlight: "all",
+                  lineNumbers: "on",
                 }}
-            />
-            </div>
+              />
+            </Panel>
 
-            <div className={`terminal ${mobileTerminalVisible ? 'mobile-visible' : ''}`}>
-            {/* Mobile terminal header */}
-            <div className="terminal-mobile-header">
+            <PanelResizeHandle className="resize-handle-vertical" />
+
+            <Panel defaultSize={35} minSize={10} className={`terminal ${mobileTerminalVisible ? 'mobile-visible' : ''}`}>
+              {/* Mobile terminal header */}
+              <div className="terminal-mobile-header">
                 <span className="title">Terminal</span>
                 <button 
-                className="icon-button"
-                onClick={() => setMobileTerminalVisible(false)}
+                  className="icon-button"
+                  onClick={() => setMobileTerminalVisible(false)}
                 >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+                  </svg>
                 </button>
-            </div>
-            <Terminal />
-            </div>
-        </div>
+              </div>
+              <Terminal />
+            </Panel>
+          </PanelGroup>
+        </Panel>
+
+        <PanelResizeHandle className="resize-handle-horizontal" />
 
         {/* Right Sidebar: GitHub Repos */}
-        <GitHubSidebar 
-          className={mobileGitHubVisible ? 'mobile-visible' : ''}
-        />
-
-      </div>
+        <Panel
+          defaultSize={25}
+          minSize={15}
+          collapsible={true}
+          collapsedSize={0}
+        >
+          <GitHubSidebar className={mobileGitHubVisible ? 'mobile-visible' : ''} />
+        </Panel>
+      </PanelGroup>
 
       {/* Mobile Bottom Toolbar */}
       <div className="mobile-toolbar">

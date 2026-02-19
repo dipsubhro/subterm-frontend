@@ -223,12 +223,72 @@ body {
    Main Container (Panels)
    =========================== */
 .container {
-  display: flex;
-  flex-direction: row; /* Ensure row layout */
   flex: 1;
   min-height: 0;
   overflow: hidden;
   position: relative;
+}
+
+/* ===========================
+   Resize Handles
+   =========================== */
+.resize-handle-horizontal,
+.resize-handle-vertical {
+  position: relative;
+  background-color: var(--border-color);
+  transition: background-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.resize-handle-horizontal {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.resize-handle-vertical {
+  height: 4px;
+  cursor: row-resize;
+}
+
+.resize-handle-horizontal:hover,
+.resize-handle-horizontal[data-resize-handle-active],
+.resize-handle-vertical:hover,
+.resize-handle-vertical[data-resize-handle-active] {
+  background-color: var(--accent-primary);
+}
+
+/* Visual affordance line centered in the handle */
+.resize-handle-horizontal::after,
+.resize-handle-vertical::after {
+  content: '';
+  position: absolute;
+  border-radius: 2px;
+  background-color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.resize-handle-horizontal::after {
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+}
+
+.resize-handle-vertical::after {
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 2px;
+  transform: translate(-50%, -50%);
+}
+
+.resize-handle-horizontal:hover::after,
+.resize-handle-horizontal[data-resize-handle-active]::after,
+.resize-handle-vertical:hover::after,
+.resize-handle-vertical[data-resize-handle-active]::after {
+  opacity: 1;
 }
 
 /* ===========================
@@ -237,15 +297,10 @@ body {
 .files {
   display: flex;
   flex-direction: column;
-  width: var(--sidebar-width);
-  min-width: 200px;
-  max-width: 400px;
   height: 100%;
   background-color: var(--bg-primary);
   border-right: 1px solid var(--border-color);
   overflow: hidden;
-  flex-shrink: 0;
-  transition: transform var(--transition-normal), width var(--transition-normal);
 }
 
 .files .selected-file-label {
@@ -380,23 +435,8 @@ body {
    Middle Section (Editor & Terminal)
    =========================== */
 .middle-section {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
   height: 100%;
   overflow: hidden;
-}
-
-.middle-section .editor {
-  flex: 1;
-  min-height: 0;
-}
-
-.middle-section .terminal {
-  flex-shrink: 0;
-  height: 300px;
-  border-top: 1px solid var(--border-color);
 }
 
 /* ===========================
@@ -424,12 +464,8 @@ body {
   background-color: var(--bg-primary);
   border-top: 1px solid var(--border-color);
   padding: var(--space-3);
-  height: var(--terminal-height);
-  min-height: 100px;
-  max-height: 50vh;
+  height: 100%;
   overflow: hidden;
-  transition: height var(--transition-normal), max-height var(--transition-normal);
-  flex-shrink: 0;
 }
 
 .terminal-mobile-header {
@@ -466,10 +502,10 @@ body {
 .github-sidebar {
   display: flex;
   flex-direction: column;
-  width: 300px;
+  height: 100%;
   background-color: var(--bg-primary);
   border-left: 1px solid var(--border-color);
-  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .sidebar-header {
