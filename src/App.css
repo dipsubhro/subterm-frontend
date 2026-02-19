@@ -208,6 +208,40 @@ body {
   gap: var(--space-2);
 }
 
+/* Panel toggle buttons group */
+.panel-toggles {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--space-2);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--border-color);
+}
+
+.panel-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.panel-toggle-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.panel-toggle-btn:active {
+  background-color: var(--bg-elevated);
+}
+
 /* Desktop-only elements in topbar */
 .desktop-only {
   display: flex;
@@ -550,7 +584,7 @@ body {
 
 .sidebar-content {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; 
   padding: var(--space-3);
   display: flex;
   flex-direction: column;

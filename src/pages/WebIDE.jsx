@@ -8,12 +8,12 @@ import {
 } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import Terminal from "../components/Terminal";
 import FileTree from "../components/tree/FileTree";
 import Editor from "@monaco-editor/react";
 import SaveButton from "../components/SaveButton";
-import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
+import { Group as PanelGroup, Panel, Separator as PanelResizeHandle, usePanelRef } from "react-resizable-panels";
 
 import GitHubSidebar from "../components/GitHubSidebar";
 import "../App.css";
@@ -99,6 +99,35 @@ function WebIDE() {
 
 
   const editorRef = useRef(null);
+
+  // ── Panel refs for toggle buttons ──
+  const explorerPanelRef = usePanelRef();
+  const terminalPanelRef = usePanelRef();
+  const githubPanelRef = usePanelRef();
+
+  const toggleExplorer = useCallback(() => {
+    if (explorerPanelRef.current?.isCollapsed()) {
+      explorerPanelRef.current.expand();
+    } else {
+      explorerPanelRef.current?.collapse();
+    }
+  }, [explorerPanelRef]);
+
+  const toggleTerminal = useCallback(() => {
+    if (terminalPanelRef.current?.isCollapsed()) {
+      terminalPanelRef.current.expand();
+    } else {
+      terminalPanelRef.current?.collapse();
+    }
+  }, [terminalPanelRef]);
+
+  const toggleGitHub = useCallback(() => {
+    if (githubPanelRef.current?.isCollapsed()) {
+      githubPanelRef.current.expand();
+    } else {
+      githubPanelRef.current?.collapse();
+    }
+  }, [githubPanelRef]);
 
 
   // Fetch file content when selectedFilePath changes
@@ -192,6 +221,44 @@ function WebIDE() {
         {/* Desktop buttons - visible only on larger screens */}
         <div className="desktop-only actions">
           <SaveButton onSave={handleSave} />
+
+          {/* Panel toggle buttons */}
+          <div className="panel-toggles">
+            <button
+              className="panel-toggle-btn"
+              onClick={toggleExplorer}
+              aria-label="Toggle Explorer"
+              title="Toggle Explorer"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+              </svg>
+            </button>
+            <button
+              className="panel-toggle-btn"
+              onClick={toggleTerminal}
+              aria-label="Toggle Terminal"
+              title="Toggle Terminal"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="3" y1="15" x2="21" y2="15" />
+              </svg>
+            </button>
+            <button
+              className="panel-toggle-btn"
+              onClick={toggleGitHub}
+              aria-label="Toggle GitHub"
+              title="Toggle GitHub"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="15" y1="3" x2="15" y2="21" />
+              </svg>
+            </button>
+          </div>
+
           <UserButton />
         </div>
         {/* Mobile - only show UserButton in topbar */}
@@ -202,7 +269,7 @@ function WebIDE() {
 
       <PanelGroup orientation="horizontal" autoSaveId="ide-layout" className="container">
         {/* Left Sidebar: File Manager */}
-        <Panel defaultSize={20} minSize={10} className={`files ${mobileFilesVisible ? 'mobile-visible' : ''}`}>
+        <Panel panelRef={explorerPanelRef} id="explorer-panel" defaultSize={20} minSize={10} collapsible={true} collapsedSize={0} className={`files ${mobileFilesVisible ? 'mobile-visible' : ''}`}>
           {/* Mobile close button */}
           <button 
             className="panel-close-btn"
@@ -292,7 +359,7 @@ function WebIDE() {
 
             <PanelResizeHandle className="resize-handle-vertical" />
 
-            <Panel defaultSize={35} minSize={10} className={`terminal ${mobileTerminalVisible ? 'mobile-visible' : ''}`}>
+            <Panel panelRef={terminalPanelRef} id="terminal-panel" defaultSize={35} minSize={10} collapsible={true} collapsedSize={0} className={`terminal ${mobileTerminalVisible ? 'mobile-visible' : ''}`}>
               {/* Mobile terminal header */}
               <div className="terminal-mobile-header">
                 <span className="title">Terminal</span>
@@ -315,6 +382,8 @@ function WebIDE() {
 
         {/* Right Sidebar: GitHub Repos */}
         <Panel
+          panelRef={githubPanelRef}
+          id="github-panel"
           defaultSize={25}
           minSize={15}
           collapsible={true}
