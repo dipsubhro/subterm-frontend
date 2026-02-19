@@ -145,6 +145,19 @@ function WebIDE() {
     }
   }, [toast, clearToast]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveFile().then((result) => {
+          showToast(result.message, result.success ? "success" : "error");
+        });
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [saveFile, showToast]);
+
   // Close more menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
