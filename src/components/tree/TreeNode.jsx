@@ -1,7 +1,8 @@
 // Single tree row — chevron, icon, name, git badge, hover actions
 
 import { useState, useRef } from "react";
-import { ChevronIcon, FolderIcon, FileIcon, PlusIcon, DotsIcon, menuIcons } from "./icons";
+import { ChevronIcon, FolderIcon, PlusIcon, DotsIcon, menuIcons } from "./icons";
+import { getFileIcon } from "./fileIcons";
 import { ActionDropdown, InlineInput } from "./actions";
 
 const GIT_CLASS = {
@@ -77,7 +78,7 @@ export default function TreeNode({
 
       {/* Icon */}
       <span className="tree-icon">
-        {isFolder ? <FolderIcon isOpen={isOpen} /> : <FileIcon />}
+        {isFolder ? <FolderIcon isOpen={isOpen} /> : getFileIcon(node.name)}
       </span>
 
       {/* Name / Rename / Delete */}
