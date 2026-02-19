@@ -8,11 +8,11 @@ import {
 } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import Terminal from "../components/Terminal";
 import FileTree from "../components/tree/FileTree";
 import Editor from "@monaco-editor/react";
-import SaveButton from "../components/SaveButton";
+import ShortcutsModal from "../components/ShortcutsModal";
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle, usePanelRef } from "react-resizable-panels";
 
 import GitHubSidebar from "../components/GitHubSidebar";
@@ -96,6 +96,9 @@ function WebIDE() {
   const showToast = useUIStore((s) => s.showToast);
   const clearToast = useUIStore((s) => s.clearToast);
 
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [validationEnabled, setValidationEnabled] = useState(true);
+
 
 
   const editorRef = useRef(null);
@@ -153,10 +156,17 @@ function WebIDE() {
           showToast(result.message, result.success ? "success" : "error");
         });
       }
+
+      // Toggle validation: Shift + Alt + V
+      if (e.shiftKey && e.altKey && e.code === "KeyV") {
+        e.preventDefault();
+        setValidationEnabled(prev => !prev);
+        showToast(`Validation ${!validationEnabled ? "enabled" : "disabled"}`, "info");
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [saveFile, showToast]);
+  }, [saveFile, showToast, validationEnabled]);
 
   // Close more menu when clicking outside
   useEffect(() => {
@@ -233,7 +243,24 @@ function WebIDE() {
         </div>
         {/* Desktop buttons - visible only on larger screens */}
         <div className="desktop-only actions">
-          <SaveButton onSave={handleSave} />
+          <button 
+            className="custom-button"
+            onClick={() => setShowShortcuts(true)}
+            aria-label="Keyboard Shortcuts"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+              <line x1="6" y1="8" x2="6" y2="8"></line>
+              <line x1="10" y1="8" x2="10" y2="8"></line>
+              <line x1="14" y1="8" x2="14" y2="8"></line>
+              <line x1="18" y1="8" x2="18" y2="8"></line>
+              <line x1="6" y1="12" x2="6" y2="12"></line>
+              <line x1="10" y1="12" x2="10" y2="12"></line>
+              <line x1="14" y1="12" x2="14" y2="12"></line>
+              <line x1="18" y1="12" x2="18" y2="12"></line>
+              <line x1="6" y1="16" x2="16" y2="16"></line>
+            </svg>
+          </button>
 
           {/* Panel toggle buttons */}
           <div className="panel-toggles">
@@ -366,6 +393,7 @@ function WebIDE() {
                   showFoldingControls: "mouseover",
                   renderLineHighlight: "all",
                   lineNumbers: "on",
+                  renderValidationDecorations: validationEnabled ? "on" : "off",
                 }}
               />
             </Panel>
@@ -503,6 +531,11 @@ function WebIDE() {
       </div>
 
       {/* Mobile styles are now in App.css */}
+      
+      <ShortcutsModal 
+        isOpen={showShortcuts} 
+        onClose={() => setShowShortcuts(false)} 
+      />
     </div>
   );
 }
