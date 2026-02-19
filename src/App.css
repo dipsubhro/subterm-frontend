@@ -1663,3 +1663,66 @@ body {
     padding: var(--space-3);
   }
 }
+
+/* ===========================
+   Portrait Overlay
+   =========================== */
+.portrait-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--text-primary);
+}
+
+.portrait-message svg {
+  margin-bottom: var(--space-4);
+  color: var(--accent-warning);
+  animation: rotate-device 2s infinite ease-in-out;
+}
+
+.portrait-message h2 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-2);
+}
+
+.portrait-message p {
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+}
+
+@keyframes rotate-device {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-90deg); }
+  75% { transform: rotate(-90deg); }
+}
+
+/* Force show desktop elements that were previously hidden on mobile */
+.desktop-only {
+  display: flex !important;
+}
+
+/* Hide mobile-only elements */
+.mobile-only,
+.mobile-toolbar,
+.mobile-overlay,
+.panel-close-btn,
+.terminal-mobile-header {
+  display: none !important;
+}
+
+/* Override responsive hiding in panels */
+.files.mobile-visible,
+.terminal.mobile-visible,
+.github-sidebar.mobile-visible {
+  /* No longer relevant as we don't toggle classes */
+}

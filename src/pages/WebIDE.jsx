@@ -19,6 +19,7 @@ import GitHubSidebar from "../components/GitHubSidebar";
 import "../App.css";
 
 import { useFileStore, useUIStore } from "../store";
+import useIsPortraitMobile from "../hooks/useIsPortraitMobile";
 
 // Helper function to determine Monaco language from file path
 const getLanguageFromPath = (filePath) => {
@@ -69,37 +70,24 @@ const getLanguageFromPath = (filePath) => {
 
 function WebIDE() {
   const { isSignedIn, isLoaded } = useUser();
+  const isPortraitMobile = useIsPortraitMobile();
+  // const isPortraitMobile = false;
   
   // ── Zustand stores ──
   const selectedFilePath = useFileStore((s) => s.selectedFilePath);
   const selectedFileContent = useFileStore((s) => s.selectedFileContent);
   const setSelectedFileContent = useFileStore((s) => s.setSelectedFileContent);
   const reloadTree = useFileStore((s) => s.reloadTree);
-  const triggerReloadTree = useFileStore((s) => s.triggerReloadTree);
   const fetchFileContent = useFileStore((s) => s.fetchFileContent);
   const selectFile = useFileStore((s) => s.selectFile);
   const saveFile = useFileStore((s) => s.saveFile);
 
-  const mobileFilesVisible = useUIStore((s) => s.mobileFilesVisible);
-  const mobileTerminalVisible = useUIStore((s) => s.mobileTerminalVisible);
-  const mobileGitHubVisible = useUIStore((s) => s.mobileGitHubVisible);
-  const moreMenuOpen = useUIStore((s) => s.moreMenuOpen);
-  const toggleMobileFiles = useUIStore((s) => s.toggleMobileFiles);
-  const toggleMobileTerminal = useUIStore((s) => s.toggleMobileTerminal);
-  const toggleMobileGitHub = useUIStore((s) => s.toggleMobileGitHub);
-  const closeMobilePanels = useUIStore((s) => s.closeMobilePanels);
-  const setMobileFilesVisible = useUIStore((s) => s.setMobileFilesVisible);
-  const setMobileTerminalVisible = useUIStore((s) => s.setMobileTerminalVisible);
-  const toggleMoreMenu = useUIStore((s) => s.toggleMoreMenu);
-  const setMoreMenuOpen = useUIStore((s) => s.setMoreMenuOpen);
-  const toast = useUIStore((s) => s.toast);
   const showToast = useUIStore((s) => s.showToast);
   const clearToast = useUIStore((s) => s.clearToast);
+  const toast = useUIStore((s) => s.toast);
 
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [validationEnabled, setValidationEnabled] = useState(true);
-
-
 
   const editorRef = useRef(null);
 
@@ -168,17 +156,6 @@ function WebIDE() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [saveFile, showToast, validationEnabled]);
 
-  // Close more menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (moreMenuOpen && !e.target.closest('.more-menu') && !e.target.closest('.more-menu-trigger')) {
-        setMoreMenuOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [moreMenuOpen, setMoreMenuOpen]);
-
   // Show loading while Clerk determines auth state
   if (!isLoaded) {
     return (
@@ -194,23 +171,23 @@ function WebIDE() {
   const handleSave = async () => {
     const result = await saveFile();
     showToast(result.message, result.success ? "success" : "error");
-    setMoreMenuOpen(false);
-  };
-
-
-
-  const handleMobileFileClick = (path) => {
-    selectFile(path);
-    setMobileFilesVisible(false);
   };
 
   return (
     <div className="playground">
-      {/* Mobile Overlay */}
-      <div 
-        className={`mobile-overlay ${mobileFilesVisible || mobileTerminalVisible || mobileGitHubVisible || moreMenuOpen ? 'active' : ''}`}
-        onClick={closeMobilePanels}
-      />
+      {/* Portrait Mobile Overlay */}
+      {isPortraitMobile && (
+        <div className="portrait-overlay">
+          <div className="portrait-message">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path>
+              <path d="M12 4v16"></path>
+            </svg>
+            <h2>Please rotate your device</h2>
+            <p>WebIDE works best in landscape mode.</p>
+          </div>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toast && (
@@ -241,8 +218,8 @@ function WebIDE() {
           </svg>
           <span className="logo-text">SubTerm</span>
         </div>
-        {/* Desktop buttons - visible only on larger screens */}
-        <div className="desktop-only actions">
+        
+        <div className="actions">
           <button 
             className="custom-button"
             onClick={() => setShowShortcuts(true)}
@@ -301,27 +278,11 @@ function WebIDE() {
 
           <UserButton />
         </div>
-        {/* Mobile - only show UserButton in topbar */}
-        <div className="mobile-only">
-          <UserButton />
-        </div>
       </div>
 
       <PanelGroup orientation="horizontal" autoSaveId="ide-layout" className="container">
         {/* Left Sidebar: File Manager */}
-        <Panel panelRef={explorerPanelRef} id="explorer-panel" defaultSize={20} minSize={10} collapsible={true} collapsedSize={0} className={`files ${mobileFilesVisible ? 'mobile-visible' : ''}`}>
-          {/* Mobile close button */}
-          <button 
-            className="panel-close-btn"
-            onClick={() => setMobileFilesVisible(false)}
-            aria-label="Close file explorer"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-
+        <Panel panelRef={explorerPanelRef} id="explorer-panel" defaultSize={20} minSize={10} collapsible={true} collapsedSize={0} className="files">
           <div className="selected-file-label">
             <span className={`file-name ${!selectedFilePath ? 'empty' : ''}`}>
               {selectedFilePath || "No file selected"}
@@ -329,7 +290,7 @@ function WebIDE() {
           </div>
 
           <FileTree 
-            onFileClick={handleMobileFileClick} 
+            onFileClick={(path) => selectFile(path)} 
             key={reloadTree} 
           />
         </Panel>
@@ -348,7 +309,7 @@ function WebIDE() {
                 options={{
                   fontSize: 14,
                   lineHeight: 22,
-                  minimap: { enabled: window.innerWidth > 768 },
+                  minimap: { enabled: true },
                   scrollBeyondLastLine: false,
                   automaticLayout: true,
                   tabSize: 2,
@@ -400,20 +361,7 @@ function WebIDE() {
 
             <PanelResizeHandle className="resize-handle-vertical" />
 
-            <Panel panelRef={terminalPanelRef} id="terminal-panel" defaultSize={35} minSize={10} collapsible={true} collapsedSize={0} className={`terminal ${mobileTerminalVisible ? 'mobile-visible' : ''}`}>
-              {/* Mobile terminal header */}
-              <div className="terminal-mobile-header">
-                <span className="title">Terminal</span>
-                <button 
-                  className="icon-button"
-                  onClick={() => setMobileTerminalVisible(false)}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
+            <Panel panelRef={terminalPanelRef} id="terminal-panel" defaultSize={35} minSize={10} collapsible={true} collapsedSize={0} className="terminal">
               <Terminal />
             </Panel>
           </PanelGroup>
@@ -430,107 +378,9 @@ function WebIDE() {
           collapsible={true}
           collapsedSize={0}
         >
-          <GitHubSidebar className={mobileGitHubVisible ? 'mobile-visible' : ''} />
+          <GitHubSidebar />
         </Panel>
       </PanelGroup>
-
-      {/* Mobile Bottom Toolbar */}
-      <div className="mobile-toolbar">
-        {/* Files Toggle */}
-        <button 
-          className={`mobile-toolbar-btn ${mobileFilesVisible ? 'active' : ''}`}
-          onClick={toggleMobileFiles}
-          aria-label="Toggle file explorer"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <span>Files</span>
-        </button>
-
-        {/* Editor (always focused visually) */}
-        <button 
-          className={`mobile-toolbar-btn ${!mobileFilesVisible && !mobileTerminalVisible ? 'active' : ''}`}
-          onClick={closeMobilePanels}
-          aria-label="Focus editor"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="16 18 22 12 16 6"></polyline>
-            <polyline points="8 6 2 12 8 18"></polyline>
-          </svg>
-          <span>Editor</span>
-        </button>
-
-        {/* Terminal Toggle */}
-        <button 
-          className={`mobile-toolbar-btn ${mobileTerminalVisible ? 'active' : ''}`}
-          onClick={toggleMobileTerminal}
-          aria-label="Toggle terminal"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="4 17 10 11 4 5"></polyline>
-            <line x1="12" y1="19" x2="20" y2="19"></line>
-          </svg>
-          <span>Terminal</span>
-        </button>
-
-        {/* GitHub Toggle */}
-        <button 
-          className={`mobile-toolbar-btn ${mobileGitHubVisible ? 'active' : ''}`}
-          onClick={toggleMobileGitHub}
-          aria-label="Toggle GitHub"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-          </svg>
-          <span>GitHub</span>
-        </button>
-
-        {/* Save Button */}
-        <button 
-          className="mobile-toolbar-btn"
-          onClick={handleSave}
-          aria-label="Save file"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          <span>Save</span>
-        </button>
-
-        {/* More Menu Trigger */}
-        <button 
-          className={`mobile-toolbar-btn more-menu-trigger ${moreMenuOpen ? 'active' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleMoreMenu();
-          }}
-          aria-label="More options"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="1"></circle>
-            <circle cx="12" cy="5" r="1"></circle>
-            <circle cx="12" cy="19" r="1"></circle>
-          </svg>
-          <span>More</span>
-        </button>
-      </div>
-
-      {/* More Menu Dropdown */}
-      <div className={`more-menu ${moreMenuOpen ? 'active' : ''}`}>
-        <button className="more-menu-item" onClick={handleSave}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          Save
-        </button>
-      </div>
-
-      {/* Mobile styles are now in App.css */}
       
       <ShortcutsModal 
         isOpen={showShortcuts} 
