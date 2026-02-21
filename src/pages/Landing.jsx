@@ -3,21 +3,15 @@ import { SignedIn, SignedOut, UserButton, useAuth } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { SignInModal, SignUpModal } from "../components/AuthModal";
 import { theme } from "../theme";
+import "./Landing.css";
 
 const CodeBlock = () => (
-    <div
-        style={{
-            background: theme.gutter,
-            borderRadius: "12px",
-            padding: "24px",
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: "14px",
-            lineHeight: "1.6",
-            border: `1px solid ${theme.border}`,
-            maxWidth: "500px",
-            textAlign: "left",
-        }}
-    >
+    <div className="code-preview">
+        <div className="code-header">
+            <div className="window-dot red"></div>
+            <div className="window-dot yellow"></div>
+            <div className="window-dot green"></div>
+        </div>
         <div style={{ marginBottom: "8px" }}>
             <span style={{ color: theme.keyword }}>const</span>{" "}
             <span style={{ color: theme.variable }}>project</span>{" "}
@@ -41,29 +35,11 @@ const CodeBlock = () => (
 );
 
 const FeatureCard = ({ icon, title, description }) => {
-    const [isHovered, setIsHovered] = useState(false);
-
     return (
-        <div
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            style={{
-                background: isHovered ? theme.border : theme.gutter,
-                borderRadius: "12px",
-                padding: "24px",
-                border: `1px solid ${isHovered ? theme.accent : theme.border}`,
-                transition: "all 0.2s ease",
-                textAlign: "left",
-                cursor: "default",
-            }}
-        >
-            <div style={{ marginBottom: "12px", color: theme.accent }}>{icon}</div>
-            <h3 style={{ color: theme.foreground, fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}>
-                {title}
-            </h3>
-            <p style={{ color: "#858585", fontSize: "14px", lineHeight: "1.5", margin: 0 }}>
-                {description}
-            </p>
+        <div className="feature-card">
+            <div className="feature-icon">{icon}</div>
+            <h3>{title}</h3>
+            <p>{description}</p>
         </div>
     );
 };
@@ -146,14 +122,7 @@ export default function Landing() {
     };
 
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                background: theme.background,
-                color: theme.foreground,
-                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-            }}
-        >
+        <div className="landing-page">
             {/* Auth Modals */}
             <SignInModal
                 isOpen={showSignIn}
@@ -167,23 +136,15 @@ export default function Landing() {
             />
 
             {/* Navigation */}
-            <nav
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "16px 48px",
-                    borderBottom: `1px solid ${theme.border}`,
-                }}
-            >
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <nav className="landing-nav">
+                <Link to="/" className="brand">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={theme.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="4 17 10 11 4 5"></polyline>
                         <line x1="12" y1="19" x2="20" y2="19"></line>
                     </svg>
-                    <span style={{ fontSize: "20px", fontWeight: "700", color: theme.accent }}>SubTerm</span>
-                </div>
-                <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                    <span className="brand-text">SubTerm</span>
+                </Link>
+                <div className="nav-actions">
                     {!isLoaded ? (
                         <div style={{
                             width: "120px",
@@ -196,58 +157,19 @@ export default function Landing() {
                         <>
                             <SignedOut>
                                 <button
+                                    className="btn-ghost"
                                     onClick={() => setShowSignIn(true)}
-                                    style={{
-                                        background: "transparent",
-                                        border: "none",
-                                        color: theme.foreground,
-                                        fontSize: "14px",
-                                        cursor: "pointer",
-                                        padding: "8px 16px",
-                                        transition: "color 0.2s ease",
-                                    }}
-                                    onMouseEnter={(e) => (e.target.style.color = theme.accent)}
-                                    onMouseLeave={(e) => (e.target.style.color = theme.foreground)}
                                 >
                                     Sign In
                                 </button>
                                 <button
+                                    className="btn-primary"
                                     onClick={() => setShowSignUp(true)}
-                                    style={{
-                                        background: theme.accent,
-                                        border: "none",
-                                        color: "#FFFFFF",
-                                        fontSize: "14px",
-                                        cursor: "pointer",
-                                        padding: "8px 20px",
-                                        borderRadius: "6px",
-                                        fontWeight: "500",
-                                        transition: "background 0.2s ease",
-                                    }}
-                                    onMouseEnter={(e) => (e.target.style.background = theme.accentHover)}
-                                    onMouseLeave={(e) => (e.target.style.background = theme.accent)}
                                 >
                                     Get Started
                                 </button>
                             </SignedOut>
                             <SignedIn>
-                                <Link
-                                    to="/webide"
-                                    style={{
-                                        background: theme.accent,
-                                        color: "#FFFFFF",
-                                        fontSize: "14px",
-                                        padding: "8px 20px",
-                                        borderRadius: "6px",
-                                        fontWeight: "500",
-                                        textDecoration: "none",
-                                        transition: "background 0.2s ease",
-                                    }}
-                                    onMouseEnter={(e) => (e.target.style.background = theme.accentHover)}
-                                    onMouseLeave={(e) => (e.target.style.background = theme.accent)}
-                                >
-                                    Open IDE
-                                </Link>
                                 <UserButton
                                     afterSignOutUrl="/"
                                     appearance={{
@@ -266,61 +188,22 @@ export default function Landing() {
             </nav>
 
             {/* Hero Section */}
-            <section
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    padding: "80px 24px",
-                    minHeight: "70vh",
-                    opacity: mounted ? 1 : 0,
-                    transform: mounted ? "translateY(0)" : "translateY(20px)",
-                    transition: "all 0.6s ease-out",
-                }}
-            >
-                <div
-                    style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        background: theme.gutter,
-                        border: `1px solid ${theme.border}`,
-                        borderRadius: "20px",
-                        padding: "6px 16px",
-                        marginBottom: "32px",
-                        fontSize: "13px",
-                        color: "#858585",
-                    }}
-                >
+            <section className="hero-section" style={{
+                opacity: mounted ? 1 : 0,
+                transform: mounted ? "translateY(0)" : "translateY(20px)",
+                transition: "all 0.6s ease-out",
+            }}>
+                <div className="hero-badge">
                     <span style={{ color: theme.string }}>●</span> Now in Beta
                 </div>
 
-                <h1
-                    style={{
-                        fontSize: "clamp(40px, 6vw, 72px)",
-                        fontWeight: "800",
-                        lineHeight: "1.1",
-                        marginBottom: "24px",
-                        maxWidth: "800px",
-                    }}
-                >
+                <h1 className="hero-title">
                     Code Anywhere.
                     <br />
-                    <span style={{ color: theme.accent }}>Deploy Instantly.</span>
+                    <span className="gradient-text">Deploy Instantly.</span>
                 </h1>
 
-                <p
-                    style={{
-                        fontSize: "18px",
-                        color: "#858585",
-                        maxWidth: "600px",
-                        lineHeight: "1.6",
-                        marginBottom: "40px",
-                        minHeight: "32px",
-                    }}
-                >
+                <div className="hero-subtitle">
                     <Typewriter
                         lines={[
                             "A powerful cloud IDE with an integrated terminal.",
@@ -332,9 +215,9 @@ export default function Landing() {
                         deleteSpeed={25}
                         pauseTime={1500}
                     />
-                </p>
+                </div>
 
-                <div style={{ display: "flex", gap: "16px", marginBottom: "60px" }}>
+                <div className="hero-actions">
                     {!isLoaded ? (
                         <div style={{
                             width: "180px",
@@ -347,27 +230,8 @@ export default function Landing() {
                         <>
                             <SignedOut>
                                 <button
+                                    className="btn-primary btn-large"
                                     onClick={() => setShowSignUp(true)}
-                                    style={{
-                                        background: theme.accent,
-                                        border: "none",
-                                        color: "#FFFFFF",
-                                        fontSize: "16px",
-                                        cursor: "pointer",
-                                        padding: "14px 32px",
-                                        borderRadius: "8px",
-                                        fontWeight: "600",
-                                        transition: "all 0.2s ease",
-                                        boxShadow: `0 4px 14px ${theme.accent}40`,
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.background = theme.accentHover;
-                                        e.target.style.transform = "translateY(-2px)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.background = theme.accent;
-                                        e.target.style.transform = "translateY(0)";
-                                    }}
                                 >
                                     Start Coding Free
                                 </button>
@@ -375,26 +239,7 @@ export default function Landing() {
                             <SignedIn>
                                 <Link
                                     to="/webide"
-                                    style={{
-                                        background: theme.accent,
-                                        color: "#FFFFFF",
-                                        fontSize: "16px",
-                                        padding: "14px 32px",
-                                        borderRadius: "8px",
-                                        fontWeight: "600",
-                                        textDecoration: "none",
-                                        transition: "all 0.2s ease",
-                                        boxShadow: `0 4px 14px ${theme.accent}40`,
-                                        display: "inline-block",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.background = theme.accentHover;
-                                        e.target.style.transform = "translateY(-2px)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.background = theme.accent;
-                                        e.target.style.transform = "translateY(0)";
-                                    }}
+                                    className="btn-primary btn-large"
                                 >
                                     Open IDE →
                                 </Link>
@@ -407,32 +252,12 @@ export default function Landing() {
             </section>
 
             {/* Features Section */}
-            <section
-                style={{
-                    padding: "80px 48px",
-                    borderTop: `1px solid ${theme.border}`,
-                }}
-            >
-                <h2
-                    style={{
-                        textAlign: "center",
-                        fontSize: "32px",
-                        fontWeight: "700",
-                        marginBottom: "48px",
-                    }}
-                >
+            <section className="features-section">
+                <h2 className="section-title">
                     Everything you need to <span style={{ color: theme.accent }}>build faster</span>
                 </h2>
 
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                        gap: "24px",
-                        maxWidth: "1000px",
-                        margin: "0 auto",
-                    }}
-                >
+                <div className="features-grid">
                     <FeatureCard
                         icon={
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -467,21 +292,15 @@ export default function Landing() {
             </section>
 
             {/* Footer */}
-            <footer
-                style={{
-                    borderTop: `1px solid ${theme.border}`,
-                    padding: "32px 48px",
-                    textAlign: "center",
-                    color: "#858585",
-                    fontSize: "14px",
-                }}
-            >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="4 17 10 11 4 5"></polyline>
-                        <line x1="12" y1="19" x2="20" y2="19"></line>
-                    </svg>
-                    <span>SubTerm © 2026. Built with ❤️</span>
+            <footer className="landing-footer">
+                <div className="footer-content">
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="4 17 10 11 4 5"></polyline>
+                            <line x1="12" y1="19" x2="20" y2="19"></line>
+                        </svg>
+                        <span>SubTerm © 2026. Built with <span className="heart-icon">❤️</span></span>
+                    </div>
                 </div>
             </footer>
         </div>
