@@ -9,34 +9,34 @@
    =========================== */
 :root {
   /* Color Palette - Dark Theme */
-  --bg-primary: #1E1E1E;
+  --bg-primary: #1e1e1e;
   --bg-secondary: #252526;
-  --bg-tertiary: #2D2D2D;
+  --bg-tertiary: #2d2d2d;
   --bg-elevated: #333333;
-  --bg-hover: #3A3A3A;
+  --bg-hover: #3a3a3a;
   --bg-active: #094771;
-  
+
   /* Text Colors */
-  --text-primary: #D4D4D4;
+  --text-primary: #d4d4d4;
   --text-secondary: #858585;
-  --text-muted: #6B6B6B;
-  
+  --text-muted: #6b6b6b;
+
   /* Accent Colors */
-  --accent-primary: #007ACC;
-  --accent-primary-hover: #2899F5;
-  --accent-success: #4CAF50;
-  --accent-error: #F44336;
-  --accent-warning: #FFA500;
-  --accent-folder: #DCDCAA;
-  --accent-file: #9CDCFE;
-  
+  --accent-primary: #007acc;
+  --accent-primary-hover: #2899f5;
+  --accent-success: #4caf50;
+  --accent-error: #f44336;
+  --accent-warning: #ffa500;
+  --accent-folder: #dcdcaa;
+  --accent-file: #9cdcfe;
+
   /* Borders & Dividers */
-  --border-color: #2A2A2A;
-  --border-color-light: #3A3A3A;
-  --border-color-focus: #007ACC;
-  
+  --border-color: #2a2a2a;
+  --border-color-light: #3a3a3a;
+  --border-color-focus: #007acc;
+
   /* Typography */
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
   --font-size-xs: 10px;
   --font-size-sm: 12px;
   --font-size-md: 13px;
@@ -45,7 +45,7 @@
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
-  
+
   /* Spacing Scale */
   --space-1: 4px;
   --space-2: 8px;
@@ -54,30 +54,30 @@
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
-  
+
   /* Layout */
   --topbar-height: 44px;
   --sidebar-width: 260px;
   --terminal-height: 200px;
   --mobile-toolbar-height: 56px;
-  
+
   /* Border Radius */
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 12px;
-  
+
   /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-panel: 4px 0 20px rgba(0, 0, 0, 0.4);
-  
+
   /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
   --transition-slow: 0.35s ease;
-  
+
   /* Z-Index Scale */
   --z-base: 1;
   --z-dropdown: 50;
@@ -127,6 +127,71 @@ body {
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: var(--font-size-lg);
+}
+
+/* VM Boot Screen */
+.vm-boot-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  height: 100dvh;
+  background-color: var(--bg-primary);
+  font-family: var(--font-mono);
+}
+
+.vm-boot-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.vm-boot-icon {
+  animation: vm-boot-pulse 2s ease-in-out infinite;
+}
+
+.vm-boot-label {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+/* animated trailing dots */
+.vm-boot-dots::after {
+  content: "";
+  display: inline-block;
+  width: 1.5em;
+  text-align: left;
+  animation: vm-boot-ellipsis 1.4s steps(4, end) infinite;
+}
+
+@keyframes vm-boot-ellipsis {
+  0% {
+    content: "";
+  }
+  25% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  75% {
+    content: "...";
+  }
+  100% {
+    content: "";
+  }
+}
+
+@keyframes vm-boot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* ===========================
@@ -183,7 +248,11 @@ body {
   justify-content: space-between;
   height: var(--topbar-height);
   padding: 0 var(--space-4);
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
   z-index: var(--z-base);
@@ -230,7 +299,9 @@ body {
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .panel-toggle-btn:hover {
@@ -294,7 +365,7 @@ body {
 /* Visual affordance line centered in the handle */
 .resize-handle-horizontal::after,
 .resize-handle-vertical::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 2px;
   background-color: var(--text-muted);
@@ -584,7 +655,7 @@ body {
 
 .sidebar-content {
   flex: 1;
-  overflow-y: auto; 
+  overflow-y: auto;
   padding: var(--space-3);
   display: flex;
   flex-direction: column;
@@ -902,7 +973,11 @@ body {
   left: 0;
   right: 0;
   height: var(--mobile-toolbar-height);
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
   border-top: 1px solid var(--border-color-light);
   z-index: var(--z-toolbar);
   padding: 0 var(--space-2);
@@ -1009,7 +1084,8 @@ body {
    Animations
    =========================== */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.4;
   }
   50% {
@@ -1330,12 +1406,24 @@ body {
   color: var(--text-primary);
 }
 
-.tree-name.git-modified  { color: #E2C08D; }
-.tree-name.git-added     { color: #73C991; }
-.tree-name.git-deleted   { color: #C74E39; }
-.tree-name.git-untracked { color: #73C991; }
-.tree-name.git-renamed   { color: #73B8D4; }
-.tree-name.git-conflicted{ color: #E45454; }
+.tree-name.git-modified {
+  color: #e2c08d;
+}
+.tree-name.git-added {
+  color: #73c991;
+}
+.tree-name.git-deleted {
+  color: #c74e39;
+}
+.tree-name.git-untracked {
+  color: #73c991;
+}
+.tree-name.git-renamed {
+  color: #73b8d4;
+}
+.tree-name.git-conflicted {
+  color: #e45454;
+}
 
 /* --- Git badge --- */
 .tree-git-badge {
@@ -1400,7 +1488,7 @@ body {
   gap: 8px;
   padding: 6px 12px;
   font-size: var(--font-size-sm);
-  color: #CCCCCC;
+  color: #cccccc;
   background: none;
   border: none;
   width: 100%;
@@ -1443,7 +1531,7 @@ body {
 
 /* --- Delete confirmation --- */
 .tree-name-deleted {
-  color: #C74E39;
+  color: #c74e39;
   font-size: var(--font-size-md);
   text-decoration: line-through;
   opacity: 0.7;
@@ -1455,14 +1543,14 @@ body {
   gap: 6px;
   padding: 4px 8px;
   font-size: var(--font-size-sm);
-  color: #CCCCCC;
-  background: #3C1F1F;
+  color: #cccccc;
+  background: #3c1f1f;
   border-radius: var(--radius-sm);
   margin-left: 4px;
 }
 
 .tree-delete-bar .confirm {
-  background: #C74E39;
+  background: #c74e39;
   border: none;
   border-radius: 3px;
   color: #fff;
@@ -1493,20 +1581,20 @@ body {
    Light Theme (Optional)
    =========================== */
 [data-theme="light"] {
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F5F5F5;
-  --bg-tertiary: #EBEBEB;
-  --bg-elevated: #E0E0E0;
-  --bg-hover: #D5D5D5;
-  --bg-active: #BBDEFB;
-  
-  --text-primary: #1E1E1E;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #ebebeb;
+  --bg-elevated: #e0e0e0;
+  --bg-hover: #d5d5d5;
+  --bg-active: #bbdefb;
+
+  --text-primary: #1e1e1e;
   --text-secondary: #666666;
   --text-muted: #999999;
-  
-  --border-color: #E0E0E0;
-  --border-color-light: #CCCCCC;
-  
+
+  --border-color: #e0e0e0;
+  --border-color-light: #cccccc;
+
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
@@ -1643,13 +1731,23 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Responsive adjustments */
@@ -1658,7 +1756,7 @@ body {
     width: 95%;
     max-height: 90vh;
   }
-  
+
   .shortcut-item {
     padding: var(--space-3);
   }
@@ -1701,9 +1799,16 @@ body {
 }
 
 @keyframes rotate-device {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-90deg); }
-  75% { transform: rotate(-90deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-90deg);
+  }
+  75% {
+    transform: rotate(-90deg);
+  }
 }
 
 /* Force show desktop elements that were previously hidden on mobile */
