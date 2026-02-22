@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API || "http://localhost:3334",
+  baseURL: import.meta.env.VITE_API || "http://localhost:3000",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -16,7 +16,7 @@ api.interceptors.request.use(
     // if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor — centralised error handling
@@ -25,7 +25,7 @@ api.interceptors.response.use(
   (error) => {
     console.error("API Error:", error.response?.status, error.message);
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

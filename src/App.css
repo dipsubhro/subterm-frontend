@@ -194,6 +194,39 @@ body {
   }
 }
 
+/* No-VM / cap-full error state */
+.vm-cap-title {
+  color: var(--accent-error);
+}
+
+.vm-cap-sub {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.vm-cap-retry {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: transparent;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.vm-cap-retry:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
 /* ===========================
    Scrollbar Styling
    =========================== */

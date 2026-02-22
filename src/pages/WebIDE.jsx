@@ -95,15 +95,22 @@ function WebIDE() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [validationEnabled, setValidationEnabled] = useState(true);
   const [vmReady, setVmReady] = useState(socket.connected);
+  const [vmCapFull, setVmCapFull] = useState(false);
 
+  // Provision a container from the gateway on mount
   useEffect(() => {
-    if (socket.connected) {
-      setVmReady(true);
-      return;
-    }
-    const onConnect = () => setVmReady(true);
-    socket.once("connect", onConnect);
-    return () => socket.off("connect", onConnect);
+    const GATEWAY = import.meta.env.VITE_GATEWAY_URL || "http://localhost:4000";
+    fetch(`${GATEWAY}/api/container`, { method: "POST" })
+      .then((res) => {
+        if (res.status === 503) {
+          setVmCapFull(true);
+        }
+        // on success the socket will connect naturally; sessionId handling
+        // will be wired when the full router integration is added
+      })
+      .catch(() => {
+        // Gateway unreachable in pure dev mode — socket connects directly, ignore
+      });
   }, []);
 
   const editorRef = useRef(null);
@@ -176,6 +183,44 @@ function WebIDE() {
   // Show loading while Clerk determines auth state
   if (!isLoaded) {
     return <div className="loading-screen">Loading...</div>;
+  }
+
+  // No VM slots available
+  if (vmCapFull) {
+    return (
+      <div className="vm-boot-screen">
+        <div className="vm-boot-inner">
+          <svg
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--accent-error)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+            <line x1="9" y1="10" x2="9" y2="10"></line>
+            <line x1="12" y1="10" x2="12" y2="10"></line>
+            <line x1="15" y1="10" x2="15" y2="10"></line>
+          </svg>
+          <span className="vm-boot-label vm-cap-title">No VM available</span>
+          <span className="vm-cap-sub">
+            All sandbox slots are currently in use. Please try again in a few
+            minutes.
+          </span>
+          <button
+            className="vm-cap-retry"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // Show VM boot screen while socket connects
