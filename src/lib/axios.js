@@ -1,12 +1,23 @@
 import axios from "axios";
 
+const ROUTER = import.meta.env.VITE_API || "http://localhost:5500";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API || "http://localhost:3000",
+  baseURL: ROUTER,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+/**
+ * Call this after receiving a sessionId from the gateway.
+ * Prefixes all API calls with /workspace/:sessionId so the router
+ * can proxy them to the correct sandbox container.
+ */
+export function setSessionBaseURL(sessionId) {
+  api.defaults.baseURL = `${ROUTER}/workspace/${sessionId}`;
+}
 
 // Request interceptor — attach auth token, etc.
 api.interceptors.request.use(

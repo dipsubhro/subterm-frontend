@@ -25,7 +25,8 @@ import "../App.css";
 
 import { useFileStore, useUIStore } from "../store";
 import useIsPortraitMobile from "../hooks/useIsPortraitMobile";
-import socket from "../socket";
+import socket, { connectToSession } from "../socket";
+import { setSessionBaseURL } from "../lib/axios";
 
 // Helper function to determine Monaco language from file path
 const getLanguageFromPath = (filePath) => {
@@ -99,18 +100,34 @@ function WebIDE() {
 
   // Provision a container from the gateway on mount
   useEffect(() => {
-    const GATEWAY = import.meta.env.VITE_GATEWAY_URL || "http://localhost:4000";
+    const GATEWAY = import.meta.env.VITE_GATEWAY_URL || "http://localhost:4500";
     fetch(`${GATEWAY}/api/container`, { method: "POST" })
       .then((res) => {
         if (res.status === 503) {
           setVmCapFull(true);
+          return;
         }
-        // on success the socket will connect naturally; sessionId handling
-        // will be wired when the full router integration is added
+        return res.json();
+      })
+      .then((data) => {
+        if (!data?.sessionId) return;
+        // Wire axios and socket through the router workspace path
+        setSessionBaseURL(data.sessionId);
+        connectToSession(data.sessionId);
       })
       .catch(() => {
-        // Gateway unreachable in pure dev mode — socket connects directly, ignore
+        // Gateway unreachable in pure dev mode — ignore
       });
+
+    // Update vmReady based on socket connection state
+    const onConnect = () => setVmReady(true);
+    const onDisconnect = () => setVmReady(false);
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
   }, []);
 
   const editorRef = useRef(null);
