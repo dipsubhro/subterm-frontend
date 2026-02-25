@@ -1,7 +1,14 @@
 // Single tree row — chevron, icon, name, git badge, hover actions
 
-import { useState, useRef } from "react";
-import { ChevronIcon, FolderIcon, PlusIcon, DotsIcon, menuIcons } from "./icons";
+import { useState } from "react";
+import { IconButton, Tooltip, Button, Box, Typography } from "@mui/material";
+import {
+  ChevronIcon,
+  FolderIcon,
+  PlusIcon,
+  DotsIcon,
+  menuIcons,
+} from "./icons";
 import { getFileIcon } from "./fileIcons";
 import { ActionDropdown, InlineInput } from "./actions";
 
@@ -39,19 +46,37 @@ export default function TreeNode({
   const isDeleting = deletingId === node.id;
   const gitClass = node.git ? GIT_CLASS[node.git.status] : null;
 
-  const showCreateMenu = activeMenu?.nodeId === node.id && activeMenu?.type === "create";
-  const showMoreMenu = activeMenu?.nodeId === node.id && activeMenu?.type === "more";
+  const showCreateMenu =
+    activeMenu?.nodeId === node.id && activeMenu?.type === "create";
+  const showMoreMenu =
+    activeMenu?.nodeId === node.id && activeMenu?.type === "more";
 
   const [hovered, setHovered] = useState(false);
 
   const createItems = [
-    { label: "New File", icon: menuIcons.newFile, action: () => onAction(node.id, "newFile") },
-    { label: "New Folder", icon: menuIcons.newFolder, action: () => onAction(node.id, "newFolder") },
+    {
+      label: "New File",
+      icon: menuIcons.newFile,
+      action: () => onAction(node.id, "newFile"),
+    },
+    {
+      label: "New Folder",
+      icon: menuIcons.newFolder,
+      action: () => onAction(node.id, "newFolder"),
+    },
   ];
 
   const moreItems = [
-    { label: "Rename", icon: menuIcons.rename, action: () => onAction(node.id, "rename") },
-    { label: "Delete", icon: menuIcons.delete, action: () => onAction(node.id, "delete") },
+    {
+      label: "Rename",
+      icon: menuIcons.rename,
+      action: () => onAction(node.id, "rename"),
+    },
+    {
+      label: "Delete",
+      icon: menuIcons.delete,
+      action: () => onAction(node.id, "delete"),
+    },
   ];
 
   const rowClass = `tree-node${isSelected ? " selected" : ""}`;
@@ -91,11 +116,51 @@ export default function TreeNode({
       ) : isDeleting ? (
         <>
           <span className="tree-name-deleted">{node.name}</span>
-          <div className="tree-delete-bar" onClick={(e) => e.stopPropagation()}>
-            <span style={{ fontSize: 11 }}>Delete?</span>
-            <button className="confirm" onClick={() => onDeleteConfirm(node)}>Yes</button>
-            <button className="cancel" onClick={onDeleteCancel}>No</button>
-          </div>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              ml: "auto",
+              flexShrink: 0,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Typography sx={{ fontSize: 11, color: "#858585" }}>
+              Delete?
+            </Typography>
+            <Button
+              size="small"
+              variant="contained"
+              color="error"
+              sx={{
+                minWidth: 0,
+                px: "6px",
+                py: "1px",
+                fontSize: 10,
+                fontFamily: "inherit",
+              }}
+              onClick={() => onDeleteConfirm(node)}
+            >
+              Yes
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                minWidth: 0,
+                px: "6px",
+                py: "1px",
+                fontSize: 10,
+                fontFamily: "inherit",
+                borderColor: "#555",
+                color: "#d4d4d4",
+              }}
+              onClick={onDeleteCancel}
+            >
+              No
+            </Button>
+          </Box>
         </>
       ) : (
         <>
@@ -117,26 +182,36 @@ export default function TreeNode({
           >
             {isFolder && (
               <div style={{ position: "relative" }}>
-                <button
-                  className="tree-action-btn"
-                  title="Create"
-                  onClick={() => onMenuOpen(node.id, "create")}
-                >
-                  <PlusIcon />
-                </button>
-                {showCreateMenu && <ActionDropdown items={createItems} onClose={onMenuClose} />}
+                <Tooltip title="Create" placement="top">
+                  <IconButton
+                    size="small"
+                    className="tree-action-btn"
+                    onClick={() => onMenuOpen(node.id, "create")}
+                    sx={{ padding: "2px" }}
+                  >
+                    <PlusIcon />
+                  </IconButton>
+                </Tooltip>
+                {showCreateMenu && (
+                  <ActionDropdown items={createItems} onClose={onMenuClose} />
+                )}
               </div>
             )}
 
             <div style={{ position: "relative" }}>
-              <button
-                className="tree-action-btn"
-                title="More"
-                onClick={() => onMenuOpen(node.id, "more")}
-              >
-                <DotsIcon />
-              </button>
-              {showMoreMenu && <ActionDropdown items={moreItems} onClose={onMenuClose} />}
+              <Tooltip title="More" placement="top">
+                <IconButton
+                  size="small"
+                  className="tree-action-btn"
+                  onClick={() => onMenuOpen(node.id, "more")}
+                  sx={{ padding: "2px" }}
+                >
+                  <DotsIcon />
+                </IconButton>
+              </Tooltip>
+              {showMoreMenu && (
+                <ActionDropdown items={moreItems} onClose={onMenuClose} />
+              )}
             </div>
           </div>
         </>

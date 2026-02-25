@@ -1,6 +1,13 @@
 // Action UI primitives: dropdown menu, inline input, inline create row
-
-import { useState, useEffect, useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import {
+  Paper,
+  MenuList,
+  MenuItem,
+  TextField,
+  Box,
+  Typography,
+} from "@mui/material";
 import { menuIcons } from "./icons";
 
 // ── ActionDropdown ───────────────────────────────────────────
@@ -17,28 +24,50 @@ export function ActionDropdown({ items, onClose }) {
   }, [onClose]);
 
   return (
-    <div ref={ref} className="tree-dropdown">
-      {items.map((item) => (
-        <button
-          key={item.label}
-          className="tree-dropdown-item"
-          onClick={(e) => {
-            e.stopPropagation();
-            item.action();
-            onClose();
-          }}
-        >
-          {item.icon}
-          {item.label}
-        </button>
-      ))}
-    </div>
+    <Paper
+      ref={ref}
+      elevation={6}
+      sx={{
+        position: "absolute",
+        zIndex: 100,
+        top: "100%",
+        left: 0,
+        minWidth: 130,
+        bgcolor: "#252526",
+        border: "1px solid #3a3a3a",
+        borderRadius: "4px",
+        py: "2px",
+      }}
+    >
+      <MenuList dense disablePadding>
+        {items.map((item) => (
+          <MenuItem
+            key={item.label}
+            onClick={(e) => {
+              e.stopPropagation();
+              item.action();
+              onClose();
+            }}
+            sx={{ gap: 1, fontSize: 12, minHeight: 28 }}
+          >
+            {item.icon}
+            <Typography sx={{ fontSize: 12 }}>{item.label}</Typography>
+          </MenuItem>
+        ))}
+      </MenuList>
+    </Paper>
   );
 }
 
 // ── InlineInput ──────────────────────────────────────────────
 
-export function InlineInput({ defaultValue = "", icon, placeholder, onSubmit, onCancel }) {
+export function InlineInput({
+  defaultValue = "",
+  icon,
+  placeholder,
+  onSubmit,
+  onCancel,
+}) {
   const inputRef = useRef(null);
   const [value, setValue] = useState(defaultValue);
 
@@ -57,13 +86,15 @@ export function InlineInput({ defaultValue = "", icon, placeholder, onSubmit, on
   };
 
   return (
-    <div className="tree-inline-row">
-      {icon && <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>}
-      <input
-        ref={inputRef}
-        type="text"
+    <Box sx={{ display: "flex", alignItems: "center", flex: 1, gap: 0.5 }}>
+      {icon && (
+        <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+          {icon}
+        </Box>
+      )}
+      <TextField
+        inputRef={inputRef}
         value={value}
-        className="tree-inline-input"
         placeholder={placeholder}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {
@@ -73,8 +104,9 @@ export function InlineInput({ defaultValue = "", icon, placeholder, onSubmit, on
         }}
         onBlur={() => setTimeout(onCancel, 120)}
         onClick={(e) => e.stopPropagation()}
+        sx={{ flex: 1 }}
       />
-    </div>
+    </Box>
   );
 }
 
@@ -84,7 +116,10 @@ export function InlineCreateRow({ depth, kind, onSubmit, onCancel }) {
   const icon = kind === "folder" ? menuIcons.folderSmall : menuIcons.fileSmall;
 
   return (
-    <div className="tree-create-row" style={{ paddingLeft: (depth + 1) * 16 + 16 }}>
+    <div
+      className="tree-create-row"
+      style={{ paddingLeft: (depth + 1) * 16 + 16 }}
+    >
       <InlineInput
         icon={icon}
         placeholder={kind === "folder" ? "folder name…" : "filename.ext…"}
