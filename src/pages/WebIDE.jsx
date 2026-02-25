@@ -7,6 +7,17 @@ import {
   RedirectToSignIn,
 } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Snackbar,
+  Alert,
+  IconButton,
+  Tooltip,
+  Button as MuiButton,
+} from "@mui/material";
+import KeyboardIcon from "@mui/icons-material/Keyboard";
 
 import { useRef, useEffect, useCallback, useState } from "react";
 import Terminal from "../components/Terminal";
@@ -199,20 +210,52 @@ function WebIDE() {
 
   // Show loading while Clerk determines auth state
   if (!isLoaded) {
-    return <div className="loading-screen">Loading...</div>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          bgcolor: "#1e1e1e",
+        }}
+      >
+        <CircularProgress size={18} sx={{ color: "#007acc", mr: 1.5 }} />
+        <Typography
+          sx={{ color: "#d4d4d4", fontFamily: "inherit", fontSize: 13 }}
+        >
+          Loading...
+        </Typography>
+      </Box>
+    );
   }
 
   // No VM slots available
   if (vmCapFull) {
     return (
-      <div className="vm-boot-screen">
-        <div className="vm-boot-inner">
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          bgcolor: "#1e1e1e",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
           <svg
             width="36"
             height="36"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="var(--accent-error)"
+            stroke="#f44336"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -220,50 +263,71 @@ function WebIDE() {
             <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
             <line x1="8" y1="21" x2="16" y2="21"></line>
             <line x1="12" y1="17" x2="12" y2="21"></line>
-            <line x1="9" y1="10" x2="9" y2="10"></line>
-            <line x1="12" y1="10" x2="12" y2="10"></line>
-            <line x1="15" y1="10" x2="15" y2="10"></line>
           </svg>
-          <span className="vm-boot-label vm-cap-title">No VM available</span>
-          <span className="vm-cap-sub">
+          <Typography
+            sx={{
+              color: "#f44336",
+              fontFamily: "inherit",
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            No VM available
+          </Typography>
+          <Typography
+            sx={{
+              color: "#858585",
+              fontFamily: "inherit",
+              fontSize: 12,
+              textAlign: "center",
+              maxWidth: 320,
+            }}
+          >
             All sandbox slots are currently in use. Please try again in a few
             minutes.
-          </span>
-          <button
-            className="vm-cap-retry"
+          </Typography>
+          <MuiButton
+            variant="contained"
+            color="primary"
+            size="small"
+            sx={{ textTransform: "none", fontFamily: "inherit" }}
             onClick={() => window.location.reload()}
           >
             Retry
-          </button>
-        </div>
-      </div>
+          </MuiButton>
+        </Box>
+      </Box>
     );
   }
 
   // Show VM boot screen while socket connects
   if (!vmReady) {
     return (
-      <div className="vm-boot-screen">
-        <div className="vm-boot-inner">
-          <svg
-            className="vm-boot-icon"
-            width="36"
-            height="36"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--accent-primary)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          bgcolor: "#1e1e1e",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={28} sx={{ color: "#007acc" }} />
+          <Typography
+            sx={{ color: "#d4d4d4", fontFamily: "inherit", fontSize: 13 }}
           >
-            <polyline points="4 17 10 11 4 5"></polyline>
-            <line x1="12" y1="19" x2="20" y2="19"></line>
-          </svg>
-          <span className="vm-boot-label">
             Booting up VM<span className="vm-boot-dots"></span>
-          </span>
-        </div>
-      </div>
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 
@@ -301,41 +365,24 @@ function WebIDE() {
       )}
 
       {/* Toast Notification */}
-      {toast && (
-        <div
-          className={`toast-notification ${toast.type === "error" ? "error" : ""}`}
+      <Snackbar
+        open={Boolean(toast)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          severity={
+            toast?.type === "error"
+              ? "error"
+              : toast?.type === "info"
+                ? "info"
+                : "success"
+          }
+          variant="filled"
+          sx={{ fontFamily: "inherit", fontSize: 12 }}
         >
-          <span className="icon">
-            {toast.type === "error" ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="15" y1="9" x2="9" y2="15"></line>
-                <line x1="9" y1="9" x2="15" y2="15"></line>
-              </svg>
-            ) : (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-            )}
-          </span>
-          {toast.message}
-        </div>
-      )}
+          {toast?.message}
+        </Alert>
+      </Snackbar>
 
       <div className="subterm-topbar">
         <div className="logo">
@@ -356,96 +403,84 @@ function WebIDE() {
         </div>
 
         <div className="actions">
-          <button
-            className="custom-button"
-            onClick={() => setShowShortcuts(true)}
-            aria-label="Keyboard Shortcuts"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <Tooltip title="Keyboard Shortcuts" placement="bottom">
+            <IconButton
+              size="small"
+              onClick={() => setShowShortcuts(true)}
+              aria-label="Keyboard Shortcuts"
             >
-              <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
-              <line x1="6" y1="8" x2="6" y2="8"></line>
-              <line x1="10" y1="8" x2="10" y2="8"></line>
-              <line x1="14" y1="8" x2="14" y2="8"></line>
-              <line x1="18" y1="8" x2="18" y2="8"></line>
-              <line x1="6" y1="12" x2="6" y2="12"></line>
-              <line x1="10" y1="12" x2="10" y2="12"></line>
-              <line x1="14" y1="12" x2="14" y2="12"></line>
-              <line x1="18" y1="12" x2="18" y2="12"></line>
-              <line x1="6" y1="16" x2="16" y2="16"></line>
-            </svg>
-          </button>
+              <KeyboardIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
 
           {/* Panel toggle buttons */}
           <div className="panel-toggles">
-            <button
-              className="panel-toggle-btn"
-              onClick={toggleExplorer}
-              aria-label="Toggle Explorer"
-              title="Toggle Explorer"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <Tooltip title="Toggle Explorer" placement="bottom">
+              <IconButton
+                size="small"
+                className="panel-toggle-btn"
+                onClick={toggleExplorer}
+                aria-label="Toggle Explorer"
               >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="9" y1="3" x2="9" y2="21" />
-              </svg>
-            </button>
-            <button
-              className="panel-toggle-btn"
-              onClick={toggleTerminal}
-              aria-label="Toggle Terminal"
-              title="Toggle Terminal"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <line x1="9" y1="3" x2="9" y2="21" />
+                </svg>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Toggle Terminal" placement="bottom">
+              <IconButton
+                size="small"
+                className="panel-toggle-btn"
+                onClick={toggleTerminal}
+                aria-label="Toggle Terminal"
               >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="3" y1="15" x2="21" y2="15" />
-              </svg>
-            </button>
-            <button
-              className="panel-toggle-btn"
-              onClick={toggleGitHub}
-              aria-label="Toggle GitHub"
-              title="Toggle GitHub"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <line x1="3" y1="15" x2="21" y2="15" />
+                </svg>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Toggle GitHub" placement="bottom">
+              <IconButton
+                size="small"
+                className="panel-toggle-btn"
+                onClick={toggleGitHub}
+                aria-label="Toggle GitHub"
               >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="15" y1="3" x2="15" y2="21" />
-              </svg>
-            </button>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <line x1="15" y1="3" x2="15" y2="21" />
+                </svg>
+              </IconButton>
+            </Tooltip>
           </div>
 
           <UserButton />
