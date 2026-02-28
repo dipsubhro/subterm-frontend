@@ -3,7 +3,6 @@ import {
   SignUpButton,
   SignedIn,
   SignedOut,
-  UserButton,
   RedirectToSignIn,
 } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
@@ -32,6 +31,7 @@ import {
 } from "react-resizable-panels";
 
 import GitHubSidebar from "../components/GitHubSidebar";
+import UserProfileMenu from "../components/UserProfileMenu";
 import "../App.css";
 
 import { useFileStore, useUIStore } from "../store";
@@ -483,7 +483,7 @@ function WebIDE() {
             </Tooltip>
           </div>
 
-          <UserButton />
+          <UserProfileMenu />
         </div>
       </div>
 

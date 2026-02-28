@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { SignedIn, SignedOut, UserButton, useAuth } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { SignInModal, SignUpModal } from "../components/AuthModal";
+import UserProfileMenu from "../components/UserProfileMenu";
 import { theme } from "../theme";
 import "./Landing.css";
 
@@ -170,17 +171,7 @@ export default function Landing() {
                                 </button>
                             </SignedOut>
                             <SignedIn>
-                                <UserButton
-                                    afterSignOutUrl="/"
-                                    appearance={{
-                                        elements: {
-                                            avatarBox: {
-                                                width: "36px",
-                                                height: "36px",
-                                            },
-                                        },
-                                    }}
-                                />
+                                <UserProfileMenu />
                             </SignedIn>
                         </>
                     )}
