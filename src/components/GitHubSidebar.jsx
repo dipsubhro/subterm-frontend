@@ -155,7 +155,7 @@ const GitHubSidebar = ({ className = "" }) => {
   return (
     <div className={`github-sidebar ${className}`}>
         <div className="sidebar-header">
-            <h3>GitHub</h3>
+            <h3>Repo Manager</h3>
         </div>
 
         {/* Tabs */}

@@ -525,7 +525,7 @@ function WebIDE() {
         <Panel
           panelRef={explorerPanelRef}
           id="explorer-panel"
-          defaultSize={20}
+          defaultSize={15}
           minSize={10}
           collapsible={true}
           collapsedSize={0}
@@ -543,13 +543,13 @@ function WebIDE() {
         <PanelResizeHandle className="resize-handle-horizontal" />
 
         {/* Middle Section: Editor & Terminal */}
-        <Panel defaultSize={55} minSize={30}>
+        <Panel defaultSize={67} minSize={30}>
           <PanelGroup
             orientation="vertical"
             autoSaveId="center-layout"
             className="middle-section"
           >
-            <Panel defaultSize={65} minSize={20} className="editor">
+            <Panel defaultSize={75} minSize={20} className="editor">
               <Editor
                 value={selectedFileContent}
                 onChange={(newValue) => setSelectedFileContent(newValue || "")}
@@ -613,7 +613,7 @@ function WebIDE() {
             <Panel
               panelRef={terminalPanelRef}
               id="terminal-panel"
-              defaultSize={35}
+              defaultSize={25}
               minSize={10}
               collapsible={true}
               collapsedSize={0}
@@ -630,8 +630,8 @@ function WebIDE() {
         <Panel
           panelRef={githubPanelRef}
           id="github-panel"
-          defaultSize={25}
-          minSize={15}
+          defaultSize={18}
+          minSize={12}
           collapsible={true}
           collapsedSize={0}
         >
