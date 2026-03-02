@@ -1,6 +1,6 @@
 // Single tree row — chevron, icon, name, git badge, hover actions
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { IconButton, Tooltip, Button, Box, Typography } from "@mui/material";
 import {
   ChevronIcon,
@@ -52,6 +52,8 @@ export default function TreeNode({
     activeMenu?.nodeId === node.id && activeMenu?.type === "more";
 
   const [hovered, setHovered] = useState(false);
+  const createBtnRef = useRef(null);
+  const moreBtnRef = useRef(null);
 
   const createItems = [
     {
@@ -181,9 +183,10 @@ export default function TreeNode({
             onClick={(e) => e.stopPropagation()}
           >
             {isFolder && (
-              <div style={{ position: "relative" }}>
+              <>
                 <Tooltip title="Create" placement="top">
                   <IconButton
+                    ref={createBtnRef}
                     size="small"
                     className="tree-action-btn"
                     onClick={() => onMenuOpen(node.id, "create")}
@@ -192,27 +195,30 @@ export default function TreeNode({
                     <PlusIcon />
                   </IconButton>
                 </Tooltip>
-                {showCreateMenu && (
-                  <ActionDropdown items={createItems} onClose={onMenuClose} />
-                )}
-              </div>
+                <ActionDropdown
+                  items={createItems}
+                  onClose={onMenuClose}
+                  anchorEl={showCreateMenu ? createBtnRef.current : null}
+                />
+              </>
             )}
 
-            <div style={{ position: "relative" }}>
-              <Tooltip title="More" placement="top">
-                <IconButton
-                  size="small"
-                  className="tree-action-btn"
-                  onClick={() => onMenuOpen(node.id, "more")}
-                  sx={{ padding: "2px" }}
-                >
-                  <DotsIcon />
-                </IconButton>
-              </Tooltip>
-              {showMoreMenu && (
-                <ActionDropdown items={moreItems} onClose={onMenuClose} />
-              )}
-            </div>
+            <Tooltip title="More" placement="top">
+              <IconButton
+                ref={moreBtnRef}
+                size="small"
+                className="tree-action-btn"
+                onClick={() => onMenuOpen(node.id, "more")}
+                sx={{ padding: "2px" }}
+              >
+                <DotsIcon />
+              </IconButton>
+            </Tooltip>
+            <ActionDropdown
+              items={moreItems}
+              onClose={onMenuClose}
+              anchorEl={showMoreMenu ? moreBtnRef.current : null}
+            />
           </div>
         </>
       )}

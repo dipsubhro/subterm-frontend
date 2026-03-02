@@ -1,7 +1,7 @@
 // Action UI primitives: dropdown menu, inline input, inline create row
 import { useRef, useState, useEffect } from "react";
 import {
-  Paper,
+  Popover,
   MenuList,
   MenuItem,
   TextField,
@@ -12,31 +12,24 @@ import { menuIcons } from "./icons";
 
 // ── ActionDropdown ───────────────────────────────────────────
 
-export function ActionDropdown({ items, onClose }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) onClose();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onClose]);
-
+export function ActionDropdown({ items, onClose, anchorEl }) {
   return (
-    <Paper
-      ref={ref}
-      elevation={6}
-      sx={{
-        position: "absolute",
-        zIndex: 100,
-        top: "100%",
-        left: 0,
-        minWidth: 130,
-        bgcolor: "#252526",
-        border: "1px solid #3a3a3a",
-        borderRadius: "4px",
-        py: "2px",
+    <Popover
+      open={Boolean(anchorEl)}
+      anchorEl={anchorEl}
+      onClose={onClose}
+      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      transformOrigin={{ vertical: "top", horizontal: "left" }}
+      slotProps={{
+        paper: {
+          sx: {
+            minWidth: 130,
+            bgcolor: "#252526",
+            border: "1px solid #3a3a3a",
+            borderRadius: "4px",
+            py: "2px",
+          },
+        },
       }}
     >
       <MenuList dense disablePadding>
@@ -55,7 +48,7 @@ export function ActionDropdown({ items, onClose }) {
           </MenuItem>
         ))}
       </MenuList>
-    </Paper>
+    </Popover>
   );
 }
 

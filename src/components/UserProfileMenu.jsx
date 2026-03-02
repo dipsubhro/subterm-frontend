@@ -59,6 +59,7 @@ export default function UserProfileMenu() {
       <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)} onClick={() => setAnchorEl(null)}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        sx={{ zIndex: 1500 }}
         slotProps={{ paper: { sx: paperSx } }}>
 
         {/* User info */}
