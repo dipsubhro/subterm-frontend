@@ -108,6 +108,7 @@ function WebIDE() {
   const [validationEnabled, setValidationEnabled] = useState(true);
   const [vmReady, setVmReady] = useState(socket.connected);
   const [vmCapFull, setVmCapFull] = useState(false);
+  const sessionIdRef = useRef(null);
 
   // Provision a container from the gateway on mount
   useEffect(() => {
@@ -122,6 +123,7 @@ function WebIDE() {
       })
       .then((data) => {
         if (!data?.sessionId) return;
+        sessionIdRef.current = data.sessionId;
         // Wire axios and socket through the router workspace path
         setSessionBaseURL(data.sessionId);
         connectToSession(data.sessionId);
@@ -138,6 +140,33 @@ function WebIDE() {
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
+    };
+  }, []);
+
+  // Clean up container when user leaves / closes page
+  useEffect(() => {
+    const destroyContainer = () => {
+      const sid = sessionIdRef.current;
+      if (!sid) return;
+      const GATEWAY =
+        import.meta.env.VITE_GATEWAY_URL || "http://localhost:4500";
+      // sendBeacon is the only reliable way to fire a request during unload
+      navigator.sendBeacon(`${GATEWAY}/api/container/${sid}/destroy`);
+      sessionIdRef.current = null;
+    };
+
+    const handleBeforeUnload = () => destroyContainer();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") destroyContainer();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      destroyContainer(); // also clean up on unmount
     };
   }, []);
 
