@@ -21,6 +21,7 @@ import KeyboardIcon from "@mui/icons-material/Keyboard";
 import { useRef, useEffect, useCallback, useState } from "react";
 import Terminal from "../components/Terminal";
 import FileTree from "../components/tree/FileTree";
+import { getFileIcon } from "../components/tree/fileIcons";
 import Editor from "@monaco-editor/react";
 import ShortcutsModal from "../components/ShortcutsModal";
 import {
@@ -99,6 +100,8 @@ function WebIDE() {
   const fetchFileContent = useFileStore((s) => s.fetchFileContent);
   const selectFile = useFileStore((s) => s.selectFile);
   const saveFile = useFileStore((s) => s.saveFile);
+  const openTabs = useFileStore((s) => s.openTabs);
+  const closeTab = useFileStore((s) => s.closeTab);
 
   const showToast = useUIStore((s) => s.showToast);
   const clearToast = useUIStore((s) => s.clearToast);
@@ -431,6 +434,12 @@ function WebIDE() {
           <span className="logo-text">SubTerm</span>
         </div>
 
+        <div className="selected-file-label">
+          <span className={`file-name ${!selectedFilePath ? "empty" : ""}`}>
+            {selectedFilePath || "No file selected"}
+          </span>
+        </div>
+
         <div className="actions">
           <Tooltip title="Keyboard Shortcuts" placement="bottom">
             <IconButton
@@ -531,12 +540,6 @@ function WebIDE() {
           collapsedSize={0}
           className="files"
         >
-          <div className="selected-file-label">
-            <span className={`file-name ${!selectedFilePath ? "empty" : ""}`}>
-              {selectedFilePath || "No file selected"}
-            </span>
-          </div>
-
           <FileTree onFileClick={(path) => selectFile(path)} key={reloadTree} />
         </Panel>
 
@@ -550,6 +553,34 @@ function WebIDE() {
             className="middle-section"
           >
             <Panel defaultSize={75} minSize={20} className="editor">
+              {/* Open file tabs */}
+              <div className="editor-tabs">
+                {openTabs.map((path) => {
+                  const name = path.split("/").pop();
+                  const isActive = path === selectedFilePath;
+                  return (
+                    <div
+                      key={path}
+                      className={`editor-tab${isActive ? " active" : ""}`}
+                      onClick={() => selectFile(path)}
+                      title={path}
+                    >
+                      <span className="editor-tab-icon">{getFileIcon(name)}</span>
+                      <span className="editor-tab-name">{name}</span>
+                      <button
+                        className="editor-tab-close"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          closeTab(path);
+                        }}
+                        aria-label={`Close ${name}`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
               <Editor
                 value={selectedFileContent}
                 onChange={(newValue) => setSelectedFileContent(newValue || "")}
