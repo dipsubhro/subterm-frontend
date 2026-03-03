@@ -113,27 +113,60 @@ function WebIDE() {
   const [vmCapFull, setVmCapFull] = useState(false);
   const sessionIdRef = useRef(null);
 
-  // Provision a container from the gateway on mount
+  // Provision or reconnect to a container on mount
   useEffect(() => {
     const GATEWAY = import.meta.env.VITE_GATEWAY_URL || "http://localhost:4500";
-    fetch(`${GATEWAY}/api/container`, { method: "POST" })
-      .then((res) => {
-        if (res.status === 503) {
-          setVmCapFull(true);
-          return;
+
+    const connectSession = (sessionId) => {
+      sessionIdRef.current = sessionId;
+      sessionStorage.setItem("subterm_session", sessionId);
+      setSessionBaseURL(sessionId);
+      connectToSession(sessionId);
+    };
+
+    const createNewSession = () => {
+      fetch(`${GATEWAY}/api/container`, { method: "POST" })
+        .then((res) => {
+          if (res.status === 503) {
+            setVmCapFull(true);
+            return;
+          }
+          return res.json();
+        })
+        .then((data) => {
+          if (!data?.sessionId) return;
+          connectSession(data.sessionId);
+        })
+        .catch(() => {
+          // Gateway unreachable in pure dev mode — ignore
+        });
+    };
+
+    // Try to reuse an existing session from sessionStorage
+    const savedSession = sessionStorage.getItem("subterm_session");
+    if (savedSession) {
+      // Optimistically reconnect — if socket connects, session is alive
+      connectSession(savedSession);
+
+      // If socket doesn't connect within 3s, session is dead — create new
+      const fallbackTimer = setTimeout(() => {
+        if (!socket.connected) {
+          sessionStorage.removeItem("subterm_session");
+          createNewSession();
         }
-        return res.json();
-      })
-      .then((data) => {
-        if (!data?.sessionId) return;
-        sessionIdRef.current = data.sessionId;
-        // Wire axios and socket through the router workspace path
-        setSessionBaseURL(data.sessionId);
-        connectToSession(data.sessionId);
-      })
-      .catch(() => {
-        // Gateway unreachable in pure dev mode — ignore
-      });
+      }, 3000);
+
+      // Clear fallback if socket connects in time
+      const onReconnect = () => clearTimeout(fallbackTimer);
+      socket.once("connect", onReconnect);
+
+      return () => {
+        clearTimeout(fallbackTimer);
+        socket.off("connect", onReconnect);
+      };
+    } else {
+      createNewSession();
+    }
 
     // Update vmReady based on socket connection state
     const onConnect = () => setVmReady(true);
@@ -146,30 +179,25 @@ function WebIDE() {
     };
   }, []);
 
-  // Clean up container when user leaves / closes page
+  // Clean up container only when the tab is actually closed (not on refresh)
   useEffect(() => {
-    const destroyContainer = () => {
-      const sid = sessionIdRef.current;
-      if (!sid) return;
-      const GATEWAY =
-        import.meta.env.VITE_GATEWAY_URL || "http://localhost:4500";
-      // sendBeacon is the only reliable way to fire a request during unload
-      navigator.sendBeacon(`${GATEWAY}/api/container/${sid}/destroy`);
-      sessionIdRef.current = null;
+    const handlePageHide = (e) => {
+      // e.persisted = true means the page is going into bfcache (refresh/back)
+      // Only destroy when the page is truly unloading (tab close / navigate away)
+      if (!e.persisted) {
+        const sid = sessionIdRef.current;
+        if (!sid) return;
+        const GATEWAY =
+          import.meta.env.VITE_GATEWAY_URL || "http://localhost:4500";
+        navigator.sendBeacon(`${GATEWAY}/api/container/${sid}/destroy`);
+        sessionStorage.removeItem("subterm_session");
+        sessionIdRef.current = null;
+      }
     };
 
-    const handleBeforeUnload = () => destroyContainer();
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") destroyContainer();
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
+    window.addEventListener("pagehide", handlePageHide);
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      destroyContainer(); // also clean up on unmount
+      window.removeEventListener("pagehide", handlePageHide);
     };
   }, []);
 
