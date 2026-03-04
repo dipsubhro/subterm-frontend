@@ -464,7 +464,7 @@ function WebIDE() {
 
         <div className="selected-file-label">
           <span className={`file-name ${!selectedFilePath ? "empty" : ""}`}>
-            {selectedFilePath || "No file selected"}
+            {selectedFilePath ? ` ${selectedFilePath} ` : "No file selected"}
           </span>
         </div>
 
@@ -568,6 +568,9 @@ function WebIDE() {
           collapsedSize={0}
           className="files"
         >
+          <div className="sidebar-header">
+            <h3>Explorer</h3>
+          </div>
           <FileTree onFileClick={(path) => selectFile(path)} key={reloadTree} />
         </Panel>
 
@@ -593,7 +596,9 @@ function WebIDE() {
                       onClick={() => selectFile(path)}
                       title={path}
                     >
-                      <span className="editor-tab-icon">{getFileIcon(name)}</span>
+                      <span className="editor-tab-icon">
+                        {getFileIcon(name)}
+                      </span>
                       <span className="editor-tab-name">{name}</span>
                       <button
                         className="editor-tab-close"
