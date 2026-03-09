@@ -111,11 +111,52 @@ function WebIDE() {
   const [validationEnabled, setValidationEnabled] = useState(true);
   const [vmReady, setVmReady] = useState(socket.connected);
   const [vmCapFull, setVmCapFull] = useState(false);
+  const [vmError, setVmError] = useState(null);
   const sessionIdRef = useRef(null);
+  const bootTimeoutRef = useRef(null);
+
+  // Always track socket connection state for vmReady
+  useEffect(() => {
+    const onConnect = () => {
+      setVmReady(true);
+      setVmError(null);
+      // Clear boot timeout on successful connection
+      if (bootTimeoutRef.current) {
+        clearTimeout(bootTimeoutRef.current);
+        bootTimeoutRef.current = null;
+      }
+    };
+    const onDisconnect = () => setVmReady(false);
+    const onConnectError = (err) => {
+      console.error("[socket] Connection error:", err.message);
+    };
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("connect_error", onConnectError);
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("connect_error", onConnectError);
+    };
+  }, []);
 
   // Provision or reconnect to a container on mount
-  useEffect(() => {
+  const provisionVM = useCallback(() => {
     const GATEWAY = import.meta.env.VITE_GATEWAY_URL || "http://localhost:4500";
+
+    // Reset states for a fresh attempt
+    setVmError(null);
+    setVmCapFull(false);
+
+    // Overall boot timeout — if socket doesn't connect within 20s, show error
+    if (bootTimeoutRef.current) clearTimeout(bootTimeoutRef.current);
+    bootTimeoutRef.current = setTimeout(() => {
+      if (!socket.connected) {
+        setVmError(
+          "Connection timed out. The server may be unreachable or the VM failed to start."
+        );
+      }
+    }, 20000);
 
     const connectSession = (sessionId) => {
       sessionIdRef.current = sessionId;
@@ -129,7 +170,14 @@ function WebIDE() {
         .then((res) => {
           if (res.status === 503) {
             setVmCapFull(true);
+            if (bootTimeoutRef.current) {
+              clearTimeout(bootTimeoutRef.current);
+              bootTimeoutRef.current = null;
+            }
             return;
+          }
+          if (!res.ok) {
+            throw new Error(`Gateway returned ${res.status}`);
           }
           return res.json();
         })
@@ -137,8 +185,15 @@ function WebIDE() {
           if (!data?.sessionId) return;
           connectSession(data.sessionId);
         })
-        .catch(() => {
-          // Gateway unreachable in pure dev mode — ignore
+        .catch((err) => {
+          console.error("[gateway] Failed to create session:", err.message);
+          if (bootTimeoutRef.current) {
+            clearTimeout(bootTimeoutRef.current);
+            bootTimeoutRef.current = null;
+          }
+          setVmError(
+            `Failed to connect to the server: ${err.message}. Check that the gateway is running.`
+          );
         });
     };
 
@@ -167,17 +222,19 @@ function WebIDE() {
     } else {
       createNewSession();
     }
-
-    // Update vmReady based on socket connection state
-    const onConnect = () => setVmReady(true);
-    const onDisconnect = () => setVmReady(false);
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-    };
   }, []);
+
+  // Provision VM on mount
+  useEffect(() => {
+    const cleanup = provisionVM();
+    return () => {
+      if (typeof cleanup === "function") cleanup();
+      if (bootTimeoutRef.current) {
+        clearTimeout(bootTimeoutRef.current);
+        bootTimeoutRef.current = null;
+      }
+    };
+  }, [provisionVM]);
 
   // Clean up container only when the tab is actually closed (not on refresh)
   useEffect(() => {
@@ -352,6 +409,79 @@ function WebIDE() {
             size="small"
             sx={{ textTransform: "none", fontFamily: "inherit" }}
             onClick={() => window.location.reload()}
+          >
+            Retry
+          </MuiButton>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Show error screen when connection fails
+  if (vmError) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          bgcolor: "#1e1e1e",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <svg
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#ff9800"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <Typography
+            sx={{
+              color: "#ff9800",
+              fontFamily: "inherit",
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Connection Failed
+          </Typography>
+          <Typography
+            sx={{
+              color: "#858585",
+              fontFamily: "inherit",
+              fontSize: 12,
+              textAlign: "center",
+              maxWidth: 360,
+            }}
+          >
+            {vmError}
+          </Typography>
+          <MuiButton
+            variant="contained"
+            color="primary"
+            size="small"
+            sx={{ textTransform: "none", fontFamily: "inherit" }}
+            onClick={() => {
+              sessionStorage.removeItem("subterm_session");
+              setVmError(null);
+              provisionVM();
+            }}
           >
             Retry
           </MuiButton>

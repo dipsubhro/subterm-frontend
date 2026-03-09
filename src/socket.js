@@ -5,7 +5,10 @@ const ROUTER = import.meta.env.VITE_API || "http://localhost:5500";
 // Start disconnected — connectToSession() wires it up after provisioning
 const socket = io(ROUTER, {
   autoConnect: false,
-  transports: ["websocket"],
+  transports: ["polling", "websocket"],  // polling first for Cloudflare tunnel compat, upgrades to ws
+  upgrade: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
 });
 
 /**
