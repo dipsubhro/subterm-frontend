@@ -23,6 +23,8 @@ import Terminal from "../components/Terminal";
 import FileTree from "../components/tree/FileTree";
 import { getFileIcon } from "../components/tree/fileIcons";
 import Editor from "@monaco-editor/react";
+import { MonacoBinding } from "y-monaco";
+import useCollaboration from "../hooks/useCollaboration";
 import ShortcutsModal from "../components/ShortcutsModal";
 import {
   Group as PanelGroup,
@@ -112,8 +114,12 @@ function WebIDE() {
   const [vmReady, setVmReady] = useState(socket.connected);
   const [vmCapFull, setVmCapFull] = useState(false);
   const [vmError, setVmError] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
   const sessionIdRef = useRef(null);
   const bootTimeoutRef = useRef(null);
+  const bindingRef = useRef(null);
+
+  const { ytext, isSynced } = useCollaboration(selectedFilePath, sessionId);
 
   // Always track socket connection state for vmReady
   useEffect(() => {
@@ -160,6 +166,7 @@ function WebIDE() {
 
     const connectSession = (sessionId) => {
       sessionIdRef.current = sessionId;
+      setSessionId(sessionId);
       sessionStorage.setItem("subterm_session", sessionId);
       setSessionBaseURL(sessionId);
       connectToSession(sessionId);
@@ -259,6 +266,19 @@ function WebIDE() {
   }, []);
 
   const editorRef = useRef(null);
+
+  useEffect(() => {
+    if (!isSynced || !editorRef.current) return;
+    bindingRef.current = new MonacoBinding(
+      ytext,
+      editorRef.current.getModel(),
+      new Set([editorRef.current]),
+    );
+    return () => {
+      bindingRef.current?.destroy();
+      bindingRef.current = null;
+    };
+  }, [isSynced, ytext]);
 
   // ── Panel refs for toggle buttons ──
   const explorerPanelRef = usePanelRef();
@@ -745,8 +765,11 @@ function WebIDE() {
                 })}
               </div>
               <Editor
-                value={selectedFileContent}
-                onChange={(newValue) => setSelectedFileContent(newValue || "")}
+                onMount={(editor) => { editorRef.current = editor; }}
+                {...(!isSynced && {
+                  value: selectedFileContent,
+                  onChange: (newValue) => setSelectedFileContent(newValue || ""),
+                })}
                 language={getLanguageFromPath(selectedFilePath)}
                 theme="vs-dark"
                 options={{
