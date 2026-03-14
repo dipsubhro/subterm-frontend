@@ -107,6 +107,14 @@ export default function Landing() {
     const [mounted, setMounted] = useState(false);
     const [showSignIn, setShowSignIn] = useState(false);
     const [showSignUp, setShowSignUp] = useState(false);
+    const [joinUrl, setJoinUrl] = useState("");
+    const [showJoinModal, setShowJoinModal] = useState(false);
+
+    const handleJoin = () => {
+        const url = joinUrl.trim();
+        if (!url) return;
+        window.location.href = url;
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -234,10 +242,77 @@ export default function Landing() {
                                 >
                                     Open IDE →
                                 </Link>
+                                <button
+                                    className="btn-ghost btn-large"
+                                    onClick={() => setShowJoinModal(true)}
+                                >
+                                    Join
+                                </button>
                             </SignedIn>
                         </>
                     )}
                 </div>
+
+                {showJoinModal && (
+                    <div style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.6)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 1000,
+                    }} onClick={() => setShowJoinModal(false)}>
+                        <div style={{
+                            background: "#252526",
+                            border: `1px solid ${theme.border}`,
+                            borderRadius: "12px",
+                            padding: "24px",
+                            width: "420px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "16px",
+                        }} onClick={(e) => e.stopPropagation()}>
+                            <div>
+                                <p style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: 600, color: theme.foreground, fontFamily: "inherit" }}>
+                                    Join a Collaboration
+                                </p>
+                                <p style={{ margin: 0, fontSize: "12px", color: "#858585", fontFamily: "inherit" }}>
+                                    Paste the invite link shared by your collaborator.
+                                </p>
+                            </div>
+                            <div style={{ display: "flex", gap: "8px" }}>
+                                <input
+                                    type="text"
+                                    value={joinUrl}
+                                    onChange={(e) => setJoinUrl(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+                                    placeholder="Paste invite link..."
+                                    autoFocus
+                                    style={{
+                                        flex: 1,
+                                        background: theme.background,
+                                        border: `1px solid ${theme.border}`,
+                                        borderRadius: "8px",
+                                        color: theme.foreground,
+                                        fontFamily: "inherit",
+                                        fontSize: "13px",
+                                        padding: "9px 12px",
+                                        outline: "none",
+                                    }}
+                                />
+                                <button
+                                    className="btn-primary"
+                                    onClick={handleJoin}
+                                    disabled={!joinUrl.trim()}
+                                    style={{ whiteSpace: "nowrap" }}
+                                >
+                                    Join
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <CodeBlock />
             </section>

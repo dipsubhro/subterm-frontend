@@ -17,6 +17,8 @@ import {
   Button as MuiButton,
 } from "@mui/material";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
+import LinkIcon from "@mui/icons-material/Link";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 
 import { useRef, useEffect, useCallback, useState } from "react";
 import Terminal from "../components/Terminal";
@@ -120,10 +122,11 @@ function WebIDE() {
   const bootTimeoutRef = useRef(null);
   const bindingRef = useRef(null);
 
-  const { ytext, isSynced } = useCollaboration(
+  const { ytext, isSynced, emitSaved, collabCount } = useCollaboration(
     selectedFilePath,
     sessionId,
     () => setSaveState("unsaved"),
+    () => setSaveState("saved"),
   );
 
   useEffect(() => {
@@ -213,7 +216,12 @@ function WebIDE() {
         });
     };
 
-    // Try to reuse an existing session from sessionStorage
+    const inviteSession = new URLSearchParams(window.location.search).get("session");
+    if (inviteSession) {
+      connectSession(inviteSession);
+      return;
+    }
+
     const savedSession = sessionStorage.getItem("subterm_session");
     if (savedSession) {
       // Optimistically reconnect — if socket connects, session is alive
@@ -335,10 +343,11 @@ function WebIDE() {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
-        if (saveState === "syncing") return;
+        if (!selectedFilePath) return;
         setSaveState("saving");
         saveFile().then((result) => {
           setSaveState(result.success ? "saved" : "unsaved");
+          if (result.success) emitSaved();
           showToast(result.message, result.success ? "success" : "error");
         });
       }
@@ -557,10 +566,11 @@ function WebIDE() {
   if (!isSignedIn) return <RedirectToSignIn />;
 
   const handleSave = async () => {
-    if (saveState === "syncing") return;
+    if (!selectedFilePath) return;
     setSaveState("saving");
     const result = await saveFile();
     setSaveState(result.success ? "saved" : "unsaved");
+    if (result.success) emitSaved();
     showToast(result.message, result.success ? "success" : "error");
   };
 
@@ -634,6 +644,42 @@ function WebIDE() {
         </div>
 
         <div className="actions">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, px: 1.2, py: 0.4, borderRadius: 999, bgcolor: collabCount > 1 ? "#1a3a1a" : "#2a2a2a", border: `1px solid ${collabCount > 1 ? "#2d6a2d" : "#3c3c3c"}`, flexShrink: 0 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: collabCount > 1 ? "#4ec9b0" : "#6e6e6e" }} />
+            <PeopleAltIcon sx={{ fontSize: 13, color: collabCount > 1 ? "#4ec9b0" : "#6e6e6e" }} />
+            <Typography sx={{ fontSize: 11, color: collabCount > 1 ? "#4ec9b0" : "#6e6e6e", fontFamily: "inherit", lineHeight: 1 }}>
+              {collabCount}
+            </Typography>
+          </Box>
+
+          <Tooltip title="Copy invite link" placement="bottom">
+            <MuiButton
+              size="small"
+              variant="outlined"
+              startIcon={<LinkIcon sx={{ fontSize: 14 }} />}
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/webide?session=${sessionId}`);
+                showToast("Invite link copied!", "success");
+              }}
+              disabled={!sessionId}
+              sx={{
+                borderRadius: 999,
+                px: 1.5,
+                py: 0.25,
+                minWidth: 0,
+                textTransform: "none",
+                fontFamily: "inherit",
+                fontSize: 11,
+                lineHeight: 1,
+                borderColor: "#3c3c3c",
+                color: "#d4d4d4",
+                "&:hover": { borderColor: "#007acc", color: "#007acc" },
+              }}
+            >
+              Invite
+            </MuiButton>
+          </Tooltip>
+
           <Tooltip title="Keyboard Shortcuts" placement="bottom">
             <IconButton
               size="small"
