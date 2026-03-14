@@ -115,11 +115,20 @@ function WebIDE() {
   const [vmCapFull, setVmCapFull] = useState(false);
   const [vmError, setVmError] = useState(null);
   const [sessionId, setSessionId] = useState(null);
+  const [saveState, setSaveState] = useState("syncing");
   const sessionIdRef = useRef(null);
   const bootTimeoutRef = useRef(null);
   const bindingRef = useRef(null);
 
-  const { ytext, isSynced } = useCollaboration(selectedFilePath, sessionId);
+  const { ytext, isSynced } = useCollaboration(
+    selectedFilePath,
+    sessionId,
+    () => setSaveState("unsaved"),
+  );
+
+  useEffect(() => {
+    setSaveState(isSynced ? "synced" : "syncing");
+  }, [isSynced]);
 
   // Always track socket connection state for vmReady
   useEffect(() => {
@@ -326,7 +335,10 @@ function WebIDE() {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
+        if (saveState === "syncing") return;
+        setSaveState("saving");
         saveFile().then((result) => {
+          setSaveState(result.success ? "saved" : "unsaved");
           showToast(result.message, result.success ? "success" : "error");
         });
       }
@@ -545,7 +557,10 @@ function WebIDE() {
   if (!isSignedIn) return <RedirectToSignIn />;
 
   const handleSave = async () => {
+    if (saveState === "syncing") return;
+    setSaveState("saving");
     const result = await saveFile();
+    setSaveState(result.success ? "saved" : "unsaved");
     showToast(result.message, result.success ? "success" : "error");
   };
 

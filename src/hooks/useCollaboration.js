@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 
 const ROUTER = import.meta.env.VITE_API || "http://localhost:5500";
 
-export default function useCollaboration(filePath, sessionId) {
+export default function useCollaboration(filePath, sessionId, onLocalUpdate) {
   const [isSynced, setIsSynced] = useState(false);
   const ydocRef = useRef(null);
   const ytextRef = useRef(null);
@@ -42,6 +42,7 @@ export default function useCollaboration(filePath, sessionId) {
     const onUpdate = (update, origin) => {
       if (origin === socket) return;
       socket.emit("y-update", { filePath, update });
+      onLocalUpdate?.();
     };
 
     ydoc.on("update", onUpdate);
