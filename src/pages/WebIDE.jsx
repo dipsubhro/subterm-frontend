@@ -714,6 +714,27 @@ function WebIDE() {
             </Tooltip>
           </div>
 
+          <MuiButton
+            variant="contained"
+            size="small"
+            disabled={saveState !== "unsaved"}
+            onClick={handleSave}
+            sx={{
+              borderRadius: 999,
+              px: 1.5,
+              py: 0.25,
+              minWidth: 0,
+              textTransform: "none",
+              fontFamily: "inherit",
+              fontSize: 11,
+              lineHeight: 1,
+              boxShadow: "none",
+              "&:hover": { boxShadow: "none" },
+            }}
+          >
+            {saveState}
+          </MuiButton>
+
           <UserProfileMenu />
         </div>
       </div>
