@@ -364,7 +364,7 @@ function WebIDE() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [saveFile, showToast, validationEnabled]);
+  }, [saveFile, showToast, validationEnabled, selectedFilePath, emitSaved]);
 
   // Show loading while Clerk determines auth state
   if (!isLoaded) {
