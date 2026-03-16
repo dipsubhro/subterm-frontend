@@ -687,7 +687,7 @@ function WebIDE() {
       </Snackbar>
 
       <div className="subterm-topbar">
-        <div className="logo">
+        <div className="logo" style={{ cursor: "pointer" }} onClick={() => window.location.href = "/"}>
           <svg
             width="20"
             height="20"

@@ -246,7 +246,7 @@ export default function Landing() {
                                     className="btn-ghost btn-large"
                                     onClick={() => setShowJoinModal(true)}
                                 >
-                                    Join
+                                    Join Session
                                 </button>
                             </SignedIn>
                         </>
