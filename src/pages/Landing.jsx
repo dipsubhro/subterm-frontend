@@ -111,9 +111,9 @@ export default function Landing() {
     const [showJoinModal, setShowJoinModal] = useState(false);
 
     const handleJoin = () => {
-        const url = joinUrl.trim();
-        if (!url) return;
-        window.location.href = url;
+        const id = joinUrl.trim();
+        if (!id) return;
+        window.location.href = `${window.location.origin}/webide?session=${id}`;
     };
 
     useEffect(() => {
@@ -278,7 +278,7 @@ export default function Landing() {
                                     Join a Collaboration
                                 </p>
                                 <p style={{ margin: 0, fontSize: "12px", color: "#858585", fontFamily: "inherit" }}>
-                                    Paste the invite link shared by your collaborator.
+                                    Paste the session ID shared by your collaborator.
                                 </p>
                             </div>
                             <div style={{ display: "flex", gap: "8px" }}>
@@ -287,7 +287,7 @@ export default function Landing() {
                                     value={joinUrl}
                                     onChange={(e) => setJoinUrl(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handleJoin()}
-                                    placeholder="Paste invite link..."
+                                    placeholder="Paste session ID..."
                                     autoFocus
                                     style={{
                                         flex: 1,

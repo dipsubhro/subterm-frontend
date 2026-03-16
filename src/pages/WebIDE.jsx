@@ -45,6 +45,13 @@ import socket, { connectToSession } from "../socket";
 import { setSessionBaseURL } from "../lib/axios";
 
 // Helper function to determine Monaco language from file path
+const CURSOR_COLORS = ["#f38ba8", "#fab387", "#a6e3a1", "#89dceb", "#89b4fa", "#cba6f7", "#f5c2e7"];
+const getUserColor = (name) => {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  return CURSOR_COLORS[h % CURSOR_COLORS.length];
+};
+
 const getLanguageFromPath = (filePath) => {
   if (!filePath) return "plaintext";
 
@@ -92,7 +99,7 @@ const getLanguageFromPath = (filePath) => {
 };
 
 function WebIDE() {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
   const isPortraitMobile = useIsPortraitMobile();
   // const isPortraitMobile = false;
 
@@ -122,12 +129,18 @@ function WebIDE() {
   const bootTimeoutRef = useRef(null);
   const bindingRef = useRef(null);
 
-  const { ytext, isSynced, emitSaved, collabCount } = useCollaboration(
+  const { ytext, isSynced, emitSaved, collabCount, remoteCursors, updateCursor } = useCollaboration(
     selectedFilePath,
     sessionId,
     () => setSaveState("unsaved"),
     () => setSaveState("saved"),
   );
+
+  const userName = user?.firstName || user?.username || "User";
+  const userColor = getUserColor(userName);
+  const updateCursorRef = useRef(updateCursor);
+  useEffect(() => { updateCursorRef.current = updateCursor; }, [updateCursor]);
+  const cursorWidgetsRef = useRef({});
 
   useEffect(() => {
     setSaveState(isSynced ? "synced" : "syncing");
@@ -296,6 +309,60 @@ function WebIDE() {
       bindingRef.current = null;
     };
   }, [isSynced, ytext]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || !selectedFilePath) return;
+    const disposable = editor.onDidChangeCursorPosition((e) => {
+      updateCursorRef.current({
+        lineNumber: e.position.lineNumber,
+        column: e.position.column,
+        user: { name: userName, color: userColor },
+      });
+    });
+    return () => disposable.dispose();
+  }, [selectedFilePath, userName, userColor]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    Object.entries(remoteCursors).forEach(([clientId, { lineNumber, column, user: u }]) => {
+      if (cursorWidgetsRef.current[clientId]) {
+        editor.removeContentWidget(cursorWidgetsRef.current[clientId]);
+      }
+      const root = document.createElement("div");
+      root.style.cssText = "position:relative;width:0;height:0;";
+      const line = document.createElement("div");
+      line.style.cssText = `position:absolute;top:0;left:-1px;width:2px;height:1.3em;background:${u.color};pointer-events:none;`;
+      const label = document.createElement("div");
+      label.style.cssText = `position:absolute;top:-1.5em;left:-1px;background:${u.color};color:#fff;font-size:10px;padding:1px 6px;border-radius:3px 3px 3px 0;white-space:nowrap;pointer-events:none;font-family:monospace;line-height:1.6;`;
+      label.textContent = u.name;
+      root.appendChild(line);
+      root.appendChild(label);
+      const widget = {
+        getId: () => `remote-cursor-${clientId}`,
+        getDomNode: () => root,
+        getPosition: () => ({ position: { lineNumber, column }, preference: [0] }),
+      };
+      editor.addContentWidget(widget);
+      cursorWidgetsRef.current[clientId] = widget;
+    });
+    Object.keys(cursorWidgetsRef.current).forEach((clientId) => {
+      if (!remoteCursors[clientId]) {
+        editor.removeContentWidget(cursorWidgetsRef.current[clientId]);
+        delete cursorWidgetsRef.current[clientId];
+      }
+    });
+  }, [remoteCursors]);
+
+  useEffect(() => {
+    return () => {
+      const editor = editorRef.current;
+      if (!editor) return;
+      Object.values(cursorWidgetsRef.current).forEach((w) => editor.removeContentWidget(w));
+      cursorWidgetsRef.current = {};
+    };
+  }, [selectedFilePath]);
 
   // ── Panel refs for toggle buttons ──
   const explorerPanelRef = usePanelRef();
@@ -652,14 +719,14 @@ function WebIDE() {
             </Typography>
           </Box>
 
-          <Tooltip title="Copy invite link" placement="bottom">
+          <Tooltip title="Copy session ID" placement="bottom">
             <MuiButton
               size="small"
               variant="outlined"
               startIcon={<LinkIcon sx={{ fontSize: 14 }} />}
               onClick={() => {
-                navigator.clipboard.writeText(`${window.location.origin}/webide?session=${sessionId}`);
-                showToast("Invite link copied!", "success");
+                navigator.clipboard.writeText(sessionId);
+                showToast("Session ID copied!", "success");
               }}
               disabled={!sessionId}
               sx={{
