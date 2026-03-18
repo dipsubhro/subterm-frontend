@@ -37,6 +37,7 @@ import {
 
 import GitHubSidebar from "../components/GitHubSidebar";
 import UserProfileMenu from "../components/UserProfileMenu";
+import GeometricBackground from "../components/GeometricBackground";
 import "../App.css";
 
 import { useFileStore, useUIStore } from "../store";
@@ -687,6 +688,7 @@ function WebIDE() {
       </Snackbar>
 
       <div className="subterm-topbar">
+        <GeometricBackground className="topbar-geo-bg" />
         <div className="logo" style={{ cursor: "pointer" }} onClick={() => window.location.href = "/"}>
           <svg
             width="20"

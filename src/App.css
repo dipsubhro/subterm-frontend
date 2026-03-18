@@ -269,7 +269,9 @@ body {
   height: 100dvh; /* Dynamic viewport height for mobile */
   overflow: hidden;
   position: relative;
-  background-color: var(--bg-primary);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 122, 204, 0.13) 0%, transparent 70%),
+    var(--bg-primary);
 }
 
 /* ===========================
@@ -280,29 +282,43 @@ body {
   align-items: center;
   justify-content: space-between;
   height: var(--topbar-height);
-  padding: 0 var(--space-4);
-  background: linear-gradient(
-    180deg,
-    var(--bg-secondary) 0%,
-    var(--bg-primary) 100%
-  );
+  padding: 0 20px;
+  background: transparent;
   border-bottom: 1px solid var(--border-color);
+  overflow: hidden;
   flex-shrink: 0;
   z-index: var(--z-base);
   position: relative;
 }
 
+.topbar-geo-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--accent-primary);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.subterm-topbar > *:not(.topbar-geo-bg) {
+  position: relative;
+  z-index: 1;
+}
+
 .subterm-topbar .logo {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .subterm-topbar .logo-text {
-  color: var(--accent-primary);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
 }
 
 /* ── Editor Tabs ── */
@@ -536,13 +552,16 @@ body {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  max-width: 40%;
+  max-width: 36%;
   pointer-events: none;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .subterm-topbar .selected-file-label .file-name {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-size: 11px;
   font-family: var(--font-mono);
   font-style: italic;
   overflow: hidden;
@@ -552,6 +571,7 @@ body {
 
 .subterm-topbar .selected-file-label .file-name.empty {
   color: var(--text-muted);
+  font-style: italic;
 }
 
 .files .file-actions {
