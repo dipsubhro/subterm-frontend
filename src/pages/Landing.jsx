@@ -324,6 +324,13 @@ export default function Landing() {
                 </div>
             )}
 
+            <footer className="landing-footer">
+                <span>Built by </span>
+                <a href="https://subhro.tech" target="_blank" rel="noopener noreferrer" className="footer-link">
+                    subhro.tech
+                </a>
+            </footer>
+
         </div>
     );
 }
