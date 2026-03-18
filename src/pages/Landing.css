@@ -13,20 +13,14 @@
 .landing-nav {
     display: flex;
     align-items: center;
-    gap: 24px;
-    padding: 0 20px;
-    height: 48px;
-    border: 1px solid var(--border-color-light);
-    border-radius: 14px;
-    background-color: rgba(37, 37, 38, 0.82);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255,255,255,0.04) inset;
+    justify-content: space-between;
+    padding: 0 28px;
+    height: 56px;
+    background: transparent;
     position: fixed;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: max-content;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
 }
 
@@ -137,7 +131,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 140px 24px 80px;
+    padding: 120px 24px 80px;
     flex-grow: 1;
     overflow: hidden;
     /* Subtle radial glow from top-center */
@@ -200,15 +194,42 @@
     color: var(--text-primary);
 }
 
-/* Pill highlight — inspired by preview */
+/* Pill flip animation — only inner text moves */
+.flip-word {
+    display: block;
+    animation: wordSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes wordSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(60%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-title-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+}
+
 .pill-highlight {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: rgba(0, 122, 204, 0.22);
     border: 1px solid rgba(0, 122, 204, 0.4);
     color: #60b8ff;
     border-radius: 999px;
-    padding: 0.04em 0.38em 0.08em;
-    line-height: inherit;
+    padding: 0.05em 0.5em 0.1em;
+    line-height: 1;
+    width: 3.5em;
+    overflow: hidden;
+    clip-path: inset(0 0 0 0 round 999px);
 }
 
 .hero-subtitle {
@@ -241,45 +262,6 @@
     border-radius: 8px;
     animation: pulse 1.5s ease-in-out infinite;
     margin-bottom: 56px;
-}
-
-/* ── Code Block ───────────────────────────────────── */
-.code-preview {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color-light);
-    border-radius: 12px;
-    padding: 20px 24px 22px;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    line-height: 1.7;
-    max-width: 560px;
-    width: 100%;
-    text-align: left;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 122, 204, 0.08);
-}
-
-.code-header {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 16px;
-}
-
-.window-dot {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-}
-
-.window-dot.red    { background: #ff5f56; }
-.window-dot.yellow { background: #ffbd2e; }
-.window-dot.green  { background: #27c93f; }
-
-.code-tab-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-left: 6px;
-    font-family: var(--font-mono);
 }
 
 
@@ -352,8 +334,6 @@
 @media (max-width: 768px) {
     .landing-nav {
         padding: 0 16px;
-        gap: 16px;
-        top: 12px;
     }
 
 
@@ -377,11 +357,6 @@
     .btn-large {
         width: 100%;
         padding: 13px 24px;
-    }
-
-    .code-preview {
-        padding: 16px 18px;
-        font-size: 12px;
     }
 
 .modal-box {

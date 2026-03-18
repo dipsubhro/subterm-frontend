@@ -4,7 +4,29 @@ import { useState, useEffect } from "react";
 import { SignInModal, SignUpModal } from "../components/AuthModal";
 import UserProfileMenu from "../components/UserProfileMenu";
 import { theme } from "../theme";
+import Button from "@mui/material/Button";
 import "./Landing.css";
+
+const FLIP_WORDS = ["Run.", "Build.", "Test.", "Ship."];
+
+const FlipWord = () => {
+    const [index, setIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIndex((prev) => (prev + 1) % FLIP_WORDS.length);
+        }, 2200);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <span className="pill-highlight">
+            <span key={index} className="flip-word">
+                {FLIP_WORDS[index]}
+            </span>
+        </span>
+    );
+};
 
 const GeometricBackground = () => (
     <svg
@@ -63,40 +85,6 @@ const GeometricBackground = () => (
         <polyline points="60,220 60,140 140,140" stroke="currentColor" strokeWidth="1" opacity="0.15" fill="none" />
         <polyline points="1300,140 1380,140 1380,220" stroke="currentColor" strokeWidth="1" opacity="0.15" fill="none" />
     </svg>
-);
-
-const CodeBlock = () => (
-    <div className="code-preview">
-        <div className="code-header">
-            <div className="window-dot red"></div>
-            <div className="window-dot yellow"></div>
-            <div className="window-dot green"></div>
-            <span className="code-tab-label">terminal.sh</span>
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-            <span style={{ color: "#858585" }}>$</span>{" "}
-            <span style={{ color: theme.variable }}>subterm</span>{" "}
-            <span style={{ color: theme.keyword }}>init</span>{" "}
-            <span style={{ color: theme.string }}>my-project</span>
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-            <span style={{ color: theme.type }}>✓</span>{" "}
-            <span style={{ color: theme.foreground }}>Workspace ready</span>{" "}
-            <span style={{ color: "#858585" }}>— 0.3s</span>
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-            <span style={{ color: "#858585" }}>$</span>{" "}
-            <span style={{ color: theme.variable }}>project</span>
-            <span style={{ color: theme.foreground }}>.</span>
-            <span style={{ color: theme.function }}>run</span>
-            <span style={{ color: theme.foreground }}>(</span>
-            <span style={{ color: theme.string }}>"npm start"</span>
-            <span style={{ color: theme.foreground }}>)</span>
-        </div>
-        <div>
-            <span style={{ color: "#6A737D" }}>// Your code runs instantly in the cloud</span>
-        </div>
-    </div>
 );
 
 const Typewriter = ({ lines, speed = 50, deleteSpeed = 30, pauseTime = 2000 }) => {
@@ -179,7 +167,6 @@ export default function Landing() {
                         <>
                             <SignedOut>
                                 <button className="btn-ghost" onClick={() => setShowSignIn(true)}>Log In</button>
-                                <button className="btn-outline" onClick={() => setShowSignUp(true)}>Get Started</button>
                             </SignedOut>
                             <SignedIn>
                                 <UserProfileMenu />
@@ -202,8 +189,9 @@ export default function Landing() {
 
                 <div className="hero-content">
                     <h1 className="hero-title">
-                        Code.{" "}
-                        <span className="pill-highlight">Run.</span>
+                        <span className="hero-title-row">
+                            Code. <FlipWord />
+                        </span>
                         <br />
                         Deploy Instantly.
                     </h1>
@@ -227,24 +215,88 @@ export default function Landing() {
                         ) : (
                             <>
                                 <SignedOut>
-                                    <button className="btn-primary btn-large" onClick={() => setShowSignUp(true)}>
+                                    <Button
+                                        variant="contained"
+                                        size="large"
+                                        onClick={() => setShowSignUp(true)}
+                                        sx={{
+                                            background: theme.accent,
+                                            borderRadius: "8px",
+                                            textTransform: "none",
+                                            fontWeight: 600,
+                                            fontSize: "15px",
+                                            px: 4,
+                                            "&:hover": { background: theme.accentHover },
+                                        }}
+                                    >
                                         Get started
-                                    </button>
-                                    <button className="btn-ghost btn-large" onClick={() => setShowSignIn(true)}>
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        size="large"
+                                        onClick={() => setShowSignIn(true)}
+                                        sx={{
+                                            borderColor: "rgba(255,255,255,0.15)",
+                                            color: "rgba(255,255,255,0.75)",
+                                            borderRadius: "8px",
+                                            textTransform: "none",
+                                            fontWeight: 500,
+                                            fontSize: "15px",
+                                            px: 4,
+                                            "&:hover": {
+                                                borderColor: theme.accent,
+                                                color: "#fff",
+                                                background: "rgba(0,122,204,0.08)",
+                                            },
+                                        }}
+                                    >
                                         Log In
-                                    </button>
+                                    </Button>
                                 </SignedOut>
                                 <SignedIn>
-                                    <Link to="/webide" className="btn-primary btn-large">Open IDE →</Link>
-                                    <button className="btn-ghost btn-large" onClick={() => setShowJoinModal(true)}>
+                                    <Button
+                                        variant="contained"
+                                        size="large"
+                                        component={Link}
+                                        to="/webide"
+                                        sx={{
+                                            background: theme.accent,
+                                            borderRadius: "8px",
+                                            textTransform: "none",
+                                            fontWeight: 600,
+                                            fontSize: "15px",
+                                            px: 4,
+                                            "&:hover": { background: theme.accentHover },
+                                        }}
+                                    >
+                                        Open IDE →
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        size="large"
+                                        onClick={() => setShowJoinModal(true)}
+                                        sx={{
+                                            borderColor: "rgba(255,255,255,0.15)",
+                                            color: "rgba(255,255,255,0.75)",
+                                            borderRadius: "8px",
+                                            textTransform: "none",
+                                            fontWeight: 500,
+                                            fontSize: "15px",
+                                            px: 4,
+                                            "&:hover": {
+                                                borderColor: theme.accent,
+                                                color: "#fff",
+                                                background: "rgba(0,122,204,0.08)",
+                                            },
+                                        }}
+                                    >
                                         Join Session
-                                    </button>
+                                    </Button>
                                 </SignedIn>
                             </>
                         )}
                     </div>
 
-                    <CodeBlock />
                 </div>
             </section>
 
