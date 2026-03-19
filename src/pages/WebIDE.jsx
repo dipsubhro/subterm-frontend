@@ -46,10 +46,19 @@ import socket, { connectToSession } from "../socket";
 import { setSessionBaseURL } from "../lib/axios";
 
 // Helper function to determine Monaco language from file path
-const CURSOR_COLORS = ["#f38ba8", "#fab387", "#a6e3a1", "#89dceb", "#89b4fa", "#cba6f7", "#f5c2e7"];
+const CURSOR_COLORS = [
+  "#f38ba8",
+  "#fab387",
+  "#a6e3a1",
+  "#89dceb",
+  "#89b4fa",
+  "#cba6f7",
+  "#f5c2e7",
+];
 const getUserColor = (name) => {
   let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  for (let i = 0; i < name.length; i++)
+    h = (h * 31 + name.charCodeAt(i)) & 0xffff;
   return CURSOR_COLORS[h % CURSOR_COLORS.length];
 };
 
@@ -130,7 +139,14 @@ function WebIDE() {
   const bootTimeoutRef = useRef(null);
   const bindingRef = useRef(null);
 
-  const { ytext, isSynced, emitSaved, collabCount, remoteCursors, updateCursor } = useCollaboration(
+  const {
+    ytext,
+    isSynced,
+    emitSaved,
+    collabCount,
+    remoteCursors,
+    updateCursor,
+  } = useCollaboration(
     selectedFilePath,
     sessionId,
     () => setSaveState("unsaved"),
@@ -140,7 +156,9 @@ function WebIDE() {
   const userName = user?.firstName || user?.username || "User";
   const userColor = getUserColor(userName);
   const updateCursorRef = useRef(updateCursor);
-  useEffect(() => { updateCursorRef.current = updateCursor; }, [updateCursor]);
+  useEffect(() => {
+    updateCursorRef.current = updateCursor;
+  }, [updateCursor]);
   const cursorWidgetsRef = useRef({});
 
   useEffect(() => {
@@ -185,7 +203,7 @@ function WebIDE() {
     bootTimeoutRef.current = setTimeout(() => {
       if (!socket.connected) {
         setVmError(
-          "Connection timed out. The server may be unreachable or the VM failed to start."
+          "Connection timed out. The server may be unreachable or the VM failed to start.",
         );
       }
     }, 20000);
@@ -225,12 +243,14 @@ function WebIDE() {
             bootTimeoutRef.current = null;
           }
           setVmError(
-            `Failed to connect to the server: ${err.message}. Check that the gateway is running.`
+            `Failed to connect to the server: ${err.message}. Check that the gateway is running.`,
           );
         });
     };
 
-    const inviteSession = new URLSearchParams(window.location.search).get("session");
+    const inviteSession = new URLSearchParams(window.location.search).get(
+      "session",
+    );
     if (inviteSession) {
       connectSession(inviteSession);
       return;
@@ -327,27 +347,32 @@ function WebIDE() {
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
-    Object.entries(remoteCursors).forEach(([clientId, { lineNumber, column, user: u }]) => {
-      if (cursorWidgetsRef.current[clientId]) {
-        editor.removeContentWidget(cursorWidgetsRef.current[clientId]);
-      }
-      const root = document.createElement("div");
-      root.style.cssText = "position:relative;width:0;height:0;";
-      const line = document.createElement("div");
-      line.style.cssText = `position:absolute;top:0;left:-1px;width:2px;height:1.3em;background:${u.color};pointer-events:none;`;
-      const label = document.createElement("div");
-      label.style.cssText = `position:absolute;top:-1.5em;left:-1px;background:${u.color};color:#fff;font-size:10px;padding:1px 6px;border-radius:3px 3px 3px 0;white-space:nowrap;pointer-events:none;font-family:monospace;line-height:1.6;`;
-      label.textContent = u.name;
-      root.appendChild(line);
-      root.appendChild(label);
-      const widget = {
-        getId: () => `remote-cursor-${clientId}`,
-        getDomNode: () => root,
-        getPosition: () => ({ position: { lineNumber, column }, preference: [0] }),
-      };
-      editor.addContentWidget(widget);
-      cursorWidgetsRef.current[clientId] = widget;
-    });
+    Object.entries(remoteCursors).forEach(
+      ([clientId, { lineNumber, column, user: u }]) => {
+        if (cursorWidgetsRef.current[clientId]) {
+          editor.removeContentWidget(cursorWidgetsRef.current[clientId]);
+        }
+        const root = document.createElement("div");
+        root.style.cssText = "position:relative;width:0;height:0;";
+        const line = document.createElement("div");
+        line.style.cssText = `position:absolute;top:0;left:-1px;width:2px;height:1.3em;background:${u.color};pointer-events:none;`;
+        const label = document.createElement("div");
+        label.style.cssText = `position:absolute;top:-1.5em;left:-1px;background:${u.color};color:#fff;font-size:10px;padding:1px 6px;border-radius:3px 3px 3px 0;white-space:nowrap;pointer-events:none;font-family:monospace;line-height:1.6;`;
+        label.textContent = u.name;
+        root.appendChild(line);
+        root.appendChild(label);
+        const widget = {
+          getId: () => `remote-cursor-${clientId}`,
+          getDomNode: () => root,
+          getPosition: () => ({
+            position: { lineNumber, column },
+            preference: [0],
+          }),
+        };
+        editor.addContentWidget(widget);
+        cursorWidgetsRef.current[clientId] = widget;
+      },
+    );
     Object.keys(cursorWidgetsRef.current).forEach((clientId) => {
       if (!remoteCursors[clientId]) {
         editor.removeContentWidget(cursorWidgetsRef.current[clientId]);
@@ -360,7 +385,9 @@ function WebIDE() {
     return () => {
       const editor = editorRef.current;
       if (!editor) return;
-      Object.values(cursorWidgetsRef.current).forEach((w) => editor.removeContentWidget(w));
+      Object.values(cursorWidgetsRef.current).forEach((w) =>
+        editor.removeContentWidget(w),
+      );
       cursorWidgetsRef.current = {};
     };
   }, [selectedFilePath]);
@@ -689,7 +716,11 @@ function WebIDE() {
 
       <div className="subterm-topbar">
         <GeometricBackground className="topbar-geo-bg" />
-        <div className="logo" style={{ cursor: "pointer" }} onClick={() => window.location.href = "/"}>
+        <div
+          className="logo"
+          style={{ cursor: "pointer" }}
+          onClick={() => (window.location.href = "/")}
+        >
           <svg
             width="20"
             height="20"
@@ -713,10 +744,41 @@ function WebIDE() {
         </div>
 
         <div className="actions">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, px: 1.2, py: 0.4, borderRadius: 999, bgcolor: collabCount > 1 ? "#1a3a1a" : "#2a2a2a", border: `1px solid ${collabCount > 1 ? "#2d6a2d" : "#3c3c3c"}`, flexShrink: 0 }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: collabCount > 1 ? "#4ec9b0" : "#6e6e6e" }} />
-            <PeopleAltIcon sx={{ fontSize: 13, color: collabCount > 1 ? "#4ec9b0" : "#6e6e6e" }} />
-            <Typography sx={{ fontSize: 11, color: collabCount > 1 ? "#4ec9b0" : "#6e6e6e", fontFamily: "inherit", lineHeight: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              px: 1.2,
+              py: 0.4,
+              borderRadius: 999,
+              bgcolor: collabCount > 1 ? "#1a3a1a" : "#2a2a2a",
+              border: `1px solid ${collabCount > 1 ? "#2d6a2d" : "#3c3c3c"}`,
+              flexShrink: 0,
+            }}
+          >
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                bgcolor: collabCount > 1 ? "#4ec9b0" : "#6e6e6e",
+              }}
+            />
+            <PeopleAltIcon
+              sx={{
+                fontSize: 13,
+                color: collabCount > 1 ? "#4ec9b0" : "#6e6e6e",
+              }}
+            />
+            <Typography
+              sx={{
+                fontSize: 11,
+                color: collabCount > 1 ? "#4ec9b0" : "#6e6e6e",
+                fontFamily: "inherit",
+                lineHeight: 1,
+              }}
+            >
               {collabCount}
             </Typography>
           </Box>
@@ -901,25 +963,29 @@ function WebIDE() {
                         {getFileIcon(name)}
                       </span>
                       <span className="editor-tab-name">{name}</span>
-                      <button
+                      <IconButton
                         className="editor-tab-close"
                         onClick={(e) => {
                           e.stopPropagation();
                           closeTab(path);
                         }}
                         aria-label={`Close ${name}`}
+                        size="small"
                       >
                         ×
-                      </button>
+                      </IconButton>
                     </div>
                   );
                 })}
               </div>
               <Editor
-                onMount={(editor) => { editorRef.current = editor; }}
+                onMount={(editor) => {
+                  editorRef.current = editor;
+                }}
                 {...(!isSynced && {
                   value: selectedFileContent,
-                  onChange: (newValue) => setSelectedFileContent(newValue || ""),
+                  onChange: (newValue) =>
+                    setSelectedFileContent(newValue || ""),
                 })}
                 language={getLanguageFromPath(selectedFilePath)}
                 theme="vs-dark"
