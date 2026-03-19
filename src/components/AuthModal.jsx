@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignIn, useSignUp } from "@clerk/clerk-react";
+import { useAuth } from "../contexts/AuthContext";
 import { theme } from "../theme";
 import { Button, IconButton, TextField } from "@mui/material";
 
@@ -273,25 +273,25 @@ const Input = ({
           ),
         }}
         sx={{
-          '& .MuiOutlinedInput-root': {
+          "& .MuiOutlinedInput-root": {
             background: theme.gutter,
-            borderRadius: '10px',
-            '& fieldset': {
+            borderRadius: "10px",
+            "& fieldset": {
               borderColor: error ? theme.error : theme.border,
-              transition: 'all 0.2s ease',
+              transition: "all 0.2s ease",
             },
-            '&:hover fieldset': {
+            "&:hover fieldset": {
               borderColor: error ? theme.error : theme.accent,
             },
-            '&.Mui-focused fieldset': {
+            "&.Mui-focused fieldset": {
               borderColor: theme.accent,
               boxShadow: `0 0 0 3px ${theme.accent}20`,
             },
           },
-          '& .MuiInputBase-input': {
+          "& .MuiInputBase-input": {
             color: theme.foreground,
-            fontSize: '15px',
-            padding: '14px 16px',
+            fontSize: "15px",
+            padding: "14px 16px",
           },
         }}
       />
@@ -301,7 +301,7 @@ const Input = ({
 
 // Sign In Modal
 export const SignInModal = ({ isOpen, onClose, onSwitchToSignUp }) => {
-  const { signIn, isLoaded, setActive } = useSignIn();
+  const { signIn, signInWithOAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -317,45 +317,32 @@ export const SignInModal = ({ isOpen, onClose, onSwitchToSignUp }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isLoaded) return;
-
     setLoading(true);
     setError("");
 
     try {
-      const result = await signIn.create({
-        identifier: email,
-        password,
-      });
+      const { error } = await signIn(email, password);
 
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
+      if (error) {
+        setError(error.message || "Sign in failed. Please try again.");
+      } else {
         onClose();
       }
     } catch (err) {
-      setError(
-        err.errors?.[0]?.longMessage ||
-          err.message ||
-          "Sign in failed. Please try again.",
-      );
+      setError(err.message || "Sign in failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleOAuth = async (provider) => {
-    if (!isLoaded) return;
-
     try {
-      await signIn.authenticateWithRedirect({
-        strategy: `oauth_${provider}`,
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
-      });
+      const { error } = await signInWithOAuth(provider);
+      if (error) {
+        setError(error.message || "OAuth sign in failed.");
+      }
     } catch (err) {
-      setError(
-        err.errors?.[0]?.longMessage || err.message || "OAuth sign in failed.",
-      );
+      setError(err.message || "OAuth sign in failed.");
     }
   };
 
@@ -569,13 +556,12 @@ export const SignInModal = ({ isOpen, onClose, onSwitchToSignUp }) => {
 
 // Sign Up Modal
 export const SignUpModal = ({ isOpen, onClose, onSwitchToSignIn }) => {
-  const { signUp, isLoaded, setActive } = useSignUp();
+  const { signUp, signInWithOAuth } = useAuth();
   const [step, setStep] = useState("form"); // form, verify
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -586,78 +572,52 @@ export const SignUpModal = ({ isOpen, onClose, onSwitchToSignIn }) => {
       setLastName("");
       setEmail("");
       setPassword("");
-      setCode("");
       setError("");
     }
   }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isLoaded) return;
-
     setLoading(true);
     setError("");
 
     try {
-      await signUp.create({
+      const { data, error } = await signUp(
+        email,
+        password,
         firstName,
         lastName,
-        emailAddress: email,
-        password,
-      });
-
-      // Send email verification
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      setStep("verify");
-    } catch (err) {
-      setError(
-        err.errors?.[0]?.longMessage ||
-          err.message ||
-          "Sign up failed. Please try again.",
       );
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    if (!isLoaded) return;
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
-
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        onClose();
+      if (error) {
+        setError(error.message || "Sign up failed. Please try again.");
+      } else {
+        // Check if email confirmation is required
+        if (data?.user?.identities?.length === 0) {
+          setError("An account with this email already exists.");
+        } else if (data?.user && !data?.session) {
+          // Email confirmation required
+          setStep("verify");
+        } else {
+          // Auto signed in
+          onClose();
+        }
       }
     } catch (err) {
-      setError(
-        err.errors?.[0]?.longMessage ||
-          err.message ||
-          "Verification failed. Please try again.",
-      );
+      setError(err.message || "Sign up failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleOAuth = async (provider) => {
-    if (!isLoaded) return;
-
     try {
-      await signUp.authenticateWithRedirect({
-        strategy: `oauth_${provider}`,
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
-      });
+      const { error } = await signInWithOAuth(provider);
+      if (error) {
+        setError(error.message || "OAuth sign up failed.");
+      }
     } catch (err) {
-      setError(
-        err.errors?.[0]?.longMessage || err.message || "OAuth sign up failed.",
-      );
+      setError(err.message || "OAuth sign up failed.");
     }
   };
 
@@ -909,56 +869,22 @@ export const SignUpModal = ({ isOpen, onClose, onSwitchToSignIn }) => {
             </>
           ) : (
             <>
-              {/* Error Message */}
-              {error && (
-                <div style={errorStyle}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="15" y1="9" x2="9" y2="15"></line>
-                    <line x1="9" y1="9" x2="15" y2="15"></line>
-                  </svg>
-                  {error}
-                </div>
-              )}
-
-              {/* Verification Form */}
-              <form onSubmit={handleVerify}>
-                <Input
-                  label="Verification code"
-                  type="text"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder="Enter 6-digit code"
-                  autoFocus
-                  name="code"
-                />
-
-                <Button
-                  type="submit"
-                  disabled={loading || !code}
-                  sx={{
-                    ...buttonStyle,
-                    opacity: loading || !code ? 0.6 : 1,
-                    cursor: loading || !code ? "not-allowed" : "pointer",
-                    "&:hover": {
-                      transform: loading || !code ? "none" : "translateY(-2px)",
-                      boxShadow:
-                        loading || !code
-                          ? "none"
-                          : `0 8px 20px ${theme.accent}40`,
-                    },
+              {/* Verification Message */}
+              <div style={{ textAlign: "center", padding: "20px 0" }}>
+                <p style={{ color: theme.foreground, marginBottom: "16px" }}>
+                  We've sent a confirmation email to <strong>{email}</strong>
+                </p>
+                <p
+                  style={{
+                    color: "#858585",
+                    fontSize: "14px",
+                    marginBottom: "24px",
                   }}
                 >
-                  {loading ? <Spinner /> : "Verify Email"}
-                </Button>
-              </form>
+                  Please check your email and click the confirmation link to
+                  complete your signup.
+                </p>
+              </div>
 
               <Button
                 onClick={() => setStep("form")}

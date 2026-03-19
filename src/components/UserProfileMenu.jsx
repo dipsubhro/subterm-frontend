@@ -1,4 +1,4 @@
-import { useUser, useClerk } from "@clerk/clerk-react";
+import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import {
   Avatar,
@@ -11,7 +11,6 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
-import HomeIcon from "@mui/icons-material/Home";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { FaGithub } from "react-icons/fa";
 
@@ -34,37 +33,33 @@ const paperSx = {
 };
 
 export default function UserProfileMenu() {
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { user, signOut, signInWithOAuth } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const [connecting, setConnecting] = useState(false);
+
   if (!user) return null;
 
   const open = Boolean(anchorEl);
-  const name = user.fullName || user.firstName || user.username || "User";
-  const email = user.primaryEmailAddress?.emailAddress;
+  const name =
+    user.user_metadata?.first_name || user.email?.split("@")[0] || "User";
+  const email = user.email;
   const initials = (
-    user.firstName?.[0] ||
-    user.username?.[0] ||
+    user.user_metadata?.first_name?.[0] ||
+    user.email?.[0] ||
     "U"
   ).toUpperCase();
-  const gh = user.externalAccounts?.find((a) => a.provider === "oauth_github");
+
+  // Check if GitHub is connected via OAuth identities
+  const gh = user.identities?.find(
+    (identity) => identity.provider === "github",
+  );
 
   const connectGH = async () => {
     try {
       setConnecting(true);
-      const ext = await user.createExternalAccount({
-        strategy: "oauth_github",
-        redirectUrl: "/sso-callback",
-      });
-      // The verification object contains the URL to redirect to for OAuth
-      const url =
-        ext.verification?.externalVerificationRedirectURL?.href ||
-        ext.verification?.externalVerificationRedirectURL;
-      if (url) {
-        window.location.href = url;
-      } else {
-        console.error("No redirect URL returned:", ext);
+      const { data, error } = await signInWithOAuth("github");
+      if (error) {
+        console.error("GitHub connect failed:", error);
         setConnecting(false);
       }
     } catch (err) {
@@ -80,7 +75,11 @@ export default function UserProfileMenu() {
         onClick={(e) => setAnchorEl(e.currentTarget)}
         aria-label="User menu"
       >
-        <Avatar src={user.imageUrl} alt={name} className="upm-trigger-avatar">
+        <Avatar
+          src={user.user_metadata?.avatar_url}
+          alt={name}
+          className="upm-trigger-avatar"
+        >
           {initials}
         </Avatar>
       </IconButton>
@@ -97,7 +96,11 @@ export default function UserProfileMenu() {
       >
         {/* User info */}
         <div className="upm-header">
-          <Avatar src={user.imageUrl} alt={name} className="upm-header-avatar">
+          <Avatar
+            src={user.user_metadata?.avatar_url}
+            alt={name}
+            className="upm-header-avatar"
+          >
             {initials}
           </Avatar>
           <div className="upm-header-info">
@@ -113,10 +116,17 @@ export default function UserProfileMenu() {
           <span className="upm-section-label">GitHub</span>
           {gh ? (
             <div className="upm-gh-row">
-              <Avatar src={gh.avatarUrl} className="upm-gh-avatar">
+              <Avatar
+                src={gh.identity_data?.avatar_url}
+                className="upm-gh-avatar"
+              >
                 <FaGithub size={14} />
               </Avatar>
-              <span className="upm-gh-user">{gh.username || "Connected"}</span>
+              <span className="upm-gh-user">
+                {gh.identity_data?.user_name ||
+                  gh.identity_data?.preferred_username ||
+                  "Connected"}
+              </span>
               <Chip label="Connected" size="small" className="upm-gh-chip" />
             </div>
           ) : (
@@ -134,18 +144,7 @@ export default function UserProfileMenu() {
         </div>
 
         <Divider />
-        <MenuItem onClick={() => (window.location.href = "/")}>
-          <ListItemIcon>
-            <HomeIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Home</ListItemText>
-        </MenuItem>
-
-        <Divider />
-        <MenuItem
-          onClick={() => signOut({ redirectUrl: "/" })}
-          className="upm-danger"
-        >
+        <MenuItem onClick={() => signOut()} className="upm-danger">
           <ListItemIcon>
             <LogoutIcon fontSize="small" className="upm-danger-icon" />
           </ListItemIcon>
