@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "../contexts/AuthContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import api from "../lib/axios";
@@ -7,7 +7,7 @@ import { useFileStore, useUIStore } from "../store";
 import { Button, TextField } from "@mui/material";
 
 const GitHubSidebar = ({ className = "" }) => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [repos, setRepos] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -197,22 +197,22 @@ const GitHubSidebar = ({ className = "" }) => {
                   variant="outlined"
                   sx={{
                     flex: 1,
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: 'transparent',
-                      '& fieldset': {
-                        borderColor: 'rgba(255,255,255,0.1)',
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "transparent",
+                      "& fieldset": {
+                        borderColor: "rgba(255,255,255,0.1)",
                       },
-                      '&:hover fieldset': {
-                        borderColor: 'rgba(255,255,255,0.2)',
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.2)",
                       },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#007acc',
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#007acc",
                       },
                     },
-                    '& .MuiInputBase-input': {
-                      color: '#d4d4d4',
-                      fontSize: '13px',
-                      padding: '8px 12px',
+                    "& .MuiInputBase-input": {
+                      color: "#d4d4d4",
+                      fontSize: "13px",
+                      padding: "8px 12px",
                     },
                   }}
                 />
@@ -266,7 +266,7 @@ const GitHubSidebar = ({ className = "" }) => {
                           "&:hover": {
                             backgroundColor: "#007acc",
                             color: "#FFFFFF",
-                          }
+                          },
                         }}
                       >
                         {importing ? "Importing..." : "Import"}
@@ -293,22 +293,22 @@ const GitHubSidebar = ({ className = "" }) => {
               variant="outlined"
               sx={{
                 mb: 1,
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'transparent',
-                  '& fieldset': {
-                    borderColor: 'rgba(255,255,255,0.1)',
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "transparent",
+                  "& fieldset": {
+                    borderColor: "rgba(255,255,255,0.1)",
                   },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(255,255,255,0.2)',
+                  "&:hover fieldset": {
+                    borderColor: "rgba(255,255,255,0.2)",
                   },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#007acc',
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#007acc",
                   },
                 },
-                '& .MuiInputBase-input': {
-                  color: '#d4d4d4',
-                  fontSize: '13px',
-                  padding: '8px 12px',
+                "& .MuiInputBase-input": {
+                  color: "#d4d4d4",
+                  fontSize: "13px",
+                  padding: "8px 12px",
                 },
               }}
             />
@@ -320,7 +320,7 @@ const GitHubSidebar = ({ className = "" }) => {
                 "&:hover": {
                   backgroundColor: "#007acc",
                   color: "#FFFFFF",
-                }
+                },
               }}
             >
               {importing ? "Importing..." : "Clone"}

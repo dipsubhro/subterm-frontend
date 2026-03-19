@@ -1,11 +1,5 @@
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  RedirectToSignIn,
-} from "@clerk/clerk-react";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   CircularProgress,
@@ -109,7 +103,8 @@ const getLanguageFromPath = (filePath) => {
 };
 
 function WebIDE() {
-  const { isSignedIn, isLoaded, user } = useUser();
+  const { isAuthenticated, loading, user } = useAuth();
+  const navigate = useNavigate();
   const isPortraitMobile = useIsPortraitMobile();
   // const isPortraitMobile = false;
 
@@ -461,8 +456,8 @@ function WebIDE() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [saveFile, showToast, validationEnabled, selectedFilePath, emitSaved]);
 
-  // Show loading while Clerk determines auth state
-  if (!isLoaded) {
+  // Show loading while auth state is being determined
+  if (loading) {
     return (
       <Box
         sx={{
@@ -658,7 +653,10 @@ function WebIDE() {
   }
 
   // Redirect to sign in if not authenticated
-  if (!isSignedIn) return <RedirectToSignIn />;
+  if (!loading && !isAuthenticated) {
+    navigate("/");
+    return null;
+  }
 
   const handleSave = async () => {
     if (!selectedFilePath) return;

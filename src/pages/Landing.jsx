@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { SignInModal, SignUpModal } from "../components/AuthModal";
 import UserProfileMenu from "../components/UserProfileMenu";
@@ -94,7 +94,7 @@ const Typewriter = ({
 };
 
 export default function Landing() {
-  const { isLoaded } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
@@ -152,21 +152,20 @@ export default function Landing() {
           <span className="brand-text">SubTerm</span>
         </Link>
         <div className="nav-actions">
-          {!isLoaded ? (
+          {loading ? (
             <div className="nav-skeleton" />
           ) : (
             <>
-              <SignedOut>
+              {!isAuthenticated ? (
                 <Button
                   className="btn-ghost"
                   onClick={() => setShowSignIn(true)}
                 >
                   Log In
                 </Button>
-              </SignedOut>
-              <SignedIn>
+              ) : (
                 <UserProfileMenu />
-              </SignedIn>
+              )}
             </>
           )}
         </div>
@@ -206,89 +205,92 @@ export default function Landing() {
           </p>
 
           <div className="hero-actions">
-            {!isLoaded ? (
+            {loading ? (
               <div className="btn-skeleton" />
             ) : (
               <>
-                <SignedOut>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={() => setShowSignUp(true)}
-                    sx={{
-                      background: theme.accent,
-                      borderRadius: "8px",
-                      textTransform: "none",
-                      fontWeight: 600,
-                      fontSize: "15px",
-                      px: 4,
-                      "&:hover": { background: theme.accentHover },
-                    }}
-                  >
-                    Get started
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={() => setShowSignIn(true)}
-                    sx={{
-                      borderColor: "rgba(255,255,255,0.15)",
-                      color: "rgba(255,255,255,0.75)",
-                      borderRadius: "8px",
-                      textTransform: "none",
-                      fontWeight: 500,
-                      fontSize: "15px",
-                      px: 4,
-                      "&:hover": {
-                        borderColor: theme.accent,
-                        color: "#fff",
-                        background: "rgba(0,122,204,0.08)",
-                      },
-                    }}
-                  >
-                    Log In
-                  </Button>
-                </SignedOut>
-                <SignedIn>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    component={Link}
-                    to="/webide"
-                    sx={{
-                      background: theme.accent,
-                      borderRadius: "8px",
-                      textTransform: "none",
-                      fontWeight: 600,
-                      fontSize: "15px",
-                      px: 4,
-                      "&:hover": { background: theme.accentHover },
-                    }}
-                  >
-                    Open IDE →
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={() => setShowJoinModal(true)}
-                    sx={{
-                      borderColor: "rgba(255,255,255,0.15)",
-                      color: "rgba(255,255,255,0.75)",
-                      borderRadius: "8px",
-                      textTransform: "none",
-                      fontWeight: 500,
-                      fontSize: "15px",
-                      px: 4,
-                      "&:hover": {
-                        borderColor: theme.accent,
-                        color: "#fff",
-                        background: "rgba(0,122,204,0.08)",
-                      },
-                    }}
-                  >
-                    Join Session
-                  </Button>
-                </SignedIn>
+                {!isAuthenticated ? (
+                  <>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => setShowSignUp(true)}
+                      sx={{
+                        background: theme.accent,
+                        borderRadius: "8px",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: "15px",
+                        px: 4,
+                        "&:hover": { background: theme.accentHover },
+                      }}
+                    >
+                      Get started
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={() => setShowSignIn(true)}
+                      sx={{
+                        borderColor: "rgba(255,255,255,0.15)",
+                        color: "rgba(255,255,255,0.75)",
+                        borderRadius: "8px",
+                        textTransform: "none",
+                        fontWeight: 500,
+                        fontSize: "15px",
+                        px: 4,
+                        "&:hover": {
+                          borderColor: theme.accent,
+                          color: "#fff",
+                          background: "rgba(0,122,204,0.08)",
+                        },
+                      }}
+                    >
+                      Log In
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      component={Link}
+                      to="/webide"
+                      sx={{
+                        background: theme.accent,
+                        borderRadius: "8px",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: "15px",
+                        px: 4,
+                        "&:hover": { background: theme.accentHover },
+                      }}
+                    >
+                      Open IDE →
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={() => setShowJoinModal(true)}
+                      sx={{
+                        borderColor: "rgba(255,255,255,0.15)",
+                        color: "rgba(255,255,255,0.75)",
+                        borderRadius: "8px",
+                        textTransform: "none",
+                        fontWeight: 500,
+                        fontSize: "15px",
+                        px: 4,
+                        "&:hover": {
+                          borderColor: theme.accent,
+                          color: "#fff",
+                          background: "rgba(0,122,204,0.08)",
+                        },
+                      }}
+                    >
+                      Join Session
+                    </Button>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -316,22 +318,22 @@ export default function Landing() {
                 variant="outlined"
                 sx={{
                   flex: 1,
-                  '& .MuiOutlinedInput-root': {
+                  "& .MuiOutlinedInput-root": {
                     backgroundColor: theme.background,
-                    '& fieldset': {
+                    "& fieldset": {
                       borderColor: theme.border,
                     },
-                    '&:hover fieldset': {
+                    "&:hover fieldset": {
                       borderColor: theme.accent,
                     },
-                    '&.Mui-focused fieldset': {
+                    "&.Mui-focused fieldset": {
                       borderColor: theme.accent,
                     },
                   },
-                  '& .MuiInputBase-input': {
+                  "& .MuiInputBase-input": {
                     color: theme.foreground,
-                    fontSize: '13px',
-                    padding: '9px 12px',
+                    fontSize: "13px",
+                    padding: "9px 12px",
                   },
                 }}
               />
@@ -353,7 +355,7 @@ export default function Landing() {
                   "&:disabled": {
                     backgroundColor: "rgba(0,122,204,0.5)",
                     color: "rgba(255,255,255,0.6)",
-                  }
+                  },
                 }}
               >
                 Join
