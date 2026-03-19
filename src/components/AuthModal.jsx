@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignIn, useSignUp } from "@clerk/clerk-react";
 import { theme } from "../theme";
-import { Button, IconButton } from "@mui/material";
+import { Button, IconButton, TextField } from "@mui/material";
 
 // Icons
 const GithubIcon = () => (
@@ -242,55 +242,59 @@ const Input = ({
   autoFocus,
   name,
 }) => {
-  const [focused, setFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
 
   return (
     <div style={{ marginBottom: "16px" }}>
       <label style={labelStyle}>{label}</label>
-      <div style={{ position: "relative" }}>
-        <input
-          type={isPassword ? (showPassword ? "text" : "password") : type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          autoFocus={autoFocus}
-          name={name}
-          style={
-            focused
-              ? inputFocusStyle
-              : {
-                  ...inputStyle,
-                  borderColor: error ? theme.error : theme.border,
-                }
-          }
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-        />
-        {isPassword && (
-          <IconButton
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            sx={{
-              position: "absolute",
-              right: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "none",
-              border: "none",
-              color: "#858585",
-              cursor: "pointer",
-              padding: "4px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-          </IconButton>
-        )}
-      </div>
+      <TextField
+        type={isPassword ? (showPassword ? "text" : "password") : type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        name={name}
+        fullWidth
+        variant="outlined"
+        error={!!error}
+        InputProps={{
+          endAdornment: isPassword && (
+            <IconButton
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              edge="end"
+              sx={{
+                padding: "4px",
+              }}
+            >
+              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </IconButton>
+          ),
+        }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            background: theme.gutter,
+            borderRadius: '10px',
+            '& fieldset': {
+              borderColor: error ? theme.error : theme.border,
+              transition: 'all 0.2s ease',
+            },
+            '&:hover fieldset': {
+              borderColor: error ? theme.error : theme.accent,
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: theme.accent,
+              boxShadow: `0 0 0 3px ${theme.accent}20`,
+            },
+          },
+          '& .MuiInputBase-input': {
+            color: theme.foreground,
+            fontSize: '15px',
+            padding: '14px 16px',
+          },
+        }}
+      />
     </div>
   );
 };

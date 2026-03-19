@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import api from "../lib/axios";
 import { useFileStore, useUIStore } from "../store";
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 
 const GitHubSidebar = ({ className = "" }) => {
   const { user } = useUser();
@@ -186,12 +186,35 @@ const GitHubSidebar = ({ className = "" }) => {
             {/* Username Input */}
             <div className="input-group">
               <div className="search-box">
-                <input
+                <TextField
                   type="text"
                   value={githubUsername}
                   onChange={(e) => setGithubUsername(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && fetchRepos()}
                   placeholder="Username"
+                  fullWidth
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    flex: 1,
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'transparent',
+                      '& fieldset': {
+                        borderColor: 'rgba(255,255,255,0.1)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(255,255,255,0.2)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#007acc',
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      color: '#d4d4d4',
+                      fontSize: '13px',
+                      padding: '8px 12px',
+                    },
+                  }}
                 />
                 <Button
                   onClick={fetchRepos}
@@ -239,6 +262,12 @@ const GitHubSidebar = ({ className = "" }) => {
                         className="import-btn"
                         onClick={handleImport}
                         disabled={importing || !selectedBranch}
+                        sx={{
+                          "&:hover": {
+                            backgroundColor: "#007acc",
+                            color: "#FFFFFF",
+                          }
+                        }}
                       >
                         {importing ? "Importing..." : "Import"}
                       </Button>
@@ -254,16 +283,45 @@ const GitHubSidebar = ({ className = "" }) => {
         ) : (
           /* URL Tab */
           <div className="url-import">
-            <input
+            <TextField
               type="text"
               value={manualRepoUrl}
               onChange={(e) => setManualRepoUrl(e.target.value)}
               placeholder="https://github.com/user/repo"
+              fullWidth
+              size="small"
+              variant="outlined"
+              sx={{
+                mb: 1,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'transparent',
+                  '& fieldset': {
+                    borderColor: 'rgba(255,255,255,0.1)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255,255,255,0.2)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#007acc',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: '#d4d4d4',
+                  fontSize: '13px',
+                  padding: '8px 12px',
+                },
+              }}
             />
             <Button
               className="import-btn full-width"
               onClick={handleImport}
               disabled={importing || !manualRepoUrl.trim()}
+              sx={{
+                "&:hover": {
+                  backgroundColor: "#007acc",
+                  color: "#FFFFFF",
+                }
+              }}
             >
               {importing ? "Importing..." : "Clone"}
             </Button>

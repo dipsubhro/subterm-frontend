@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { SignInModal, SignUpModal } from "../components/AuthModal";
 import UserProfileMenu from "../components/UserProfileMenu";
 import { theme } from "../theme";
-import Button from "@mui/material/Button";
+import { Button, TextField } from "@mui/material";
 import GeometricBackground from "../components/GeometricBackground";
 import "./Landing.css";
 
@@ -304,19 +304,57 @@ export default function Landing() {
               Paste the session ID shared by your collaborator.
             </p>
             <div className="modal-row">
-              <input
+              <TextField
                 type="text"
                 value={joinUrl}
                 onChange={(e) => setJoinUrl(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleJoin()}
                 placeholder="Paste session ID..."
                 autoFocus
-                className="modal-input"
+                fullWidth
+                size="small"
+                variant="outlined"
+                sx={{
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: theme.background,
+                    '& fieldset': {
+                      borderColor: theme.border,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.accent,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.accent,
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: theme.foreground,
+                    fontSize: '13px',
+                    padding: '9px 12px',
+                  },
+                }}
               />
               <Button
-                className="btn-primary"
                 onClick={handleJoin}
                 disabled={!joinUrl.trim()}
+                sx={{
+                  backgroundColor: theme.accent,
+                  color: "#FFFFFF",
+                  padding: "8px 20px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: theme.accentHover,
+                  },
+                  "&:disabled": {
+                    backgroundColor: "rgba(0,122,204,0.5)",
+                    color: "rgba(255,255,255,0.6)",
+                  }
+                }}
               >
                 Join
               </Button>
